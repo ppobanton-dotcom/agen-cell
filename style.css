@@ -1,0 +1,111 @@
+/* style.css - Apotek Arsyila Mobile Frame & Print Config */
+
+html, body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar { 
+    display: none; 
+}
+.hide-scrollbar { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
+body { 
+    background-color: #f1f5f9; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    margin: 0; 
+}
+
+.mobile-frame {
+    width: 100%; 
+    max-width: 414px; 
+    height: 100vh; 
+    max-height: 896px;
+    background-color: #f8fafc; 
+    position: relative; 
+    overflow: hidden;
+    display: flex; 
+    flex-direction: column; 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+@media (min-width: 640px) { 
+    .mobile-frame { 
+        border-radius: 2.5rem; 
+        height: 90vh; 
+        border: 8px solid #0f172a; 
+    } 
+}
+
+/* Sistem Sembunyikan Aplikasi UI saat mode Cetak sekarang diatur otomatis oleh JavaScript */
+/* (Kode lama dihapus agar tidak bentrok dengan Injeksi PDF A4 Landscape) */
+
+/* --- TAMBAHAN DESAIN ELEGAN TAMBAH OBAT --- */
+.bg-leather-green {
+    background: linear-gradient(135deg, #0b2b22 0%, #061712 100%);
+    /* Pola tekstur halus (opsional) */
+    background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 10px 10px;
+}
+
+.metallic-bar {
+    background: linear-gradient(180deg, #d4d4d8 0%, #f4f4f5 20%, #e4e4e7 80%, #a1a1aa 100%);
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -2px 3px rgba(0,0,0,0.1);
+    border-top: 1px solid #ffffff;
+}
+
+.metallic-box {
+    background: linear-gradient(180deg, #e4e4e7 0%, #d4d4d8 100%);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 2px rgba(0,0,0,0.2);
+}
+
+/* Custom Toggle Switch Gold/Green */
+.toggle-checkbox:checked {
+    right: 0;
+    border-color: #8b5cf6;
+}
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #657e65; /* Hijau pudar */
+}
+.toggle-checkbox {
+    right: 0;
+    z-index: 1;
+    border-color: #e2e8f0;
+    transition: all 0.3s;
+}
+.toggle-knob {
+    background: radial-gradient(circle at 30% 30%, #fde68a, #d97706);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* --- TIGA TOMBOL EMAS 3D BERANDA --- */
+.btn-gold-3d {
+    background: linear-gradient(180deg, #fcd34d 0%, #d97706 100%);
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
+    color: #78350f;
+    text-shadow: 0 1px 0px rgba(255,255,255,0.4);
+}
+.btn-gold-3d-active:active {
+    background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.4);
+    text-shadow: none;
+    color: #fffbeb;
+}
+.ruled-paper {
+    background-color: #fdfbf7; /* Slight off-white paper color */
+    background-image: repeating-linear-gradient(transparent, transparent 31px, #cbd5e1 31px, #cbd5e1 32px);
+    border-left: 2px solid #fca5a5;
+    margin-left: 1.5rem; /* 24px */
+    padding-left: 1rem; /* 16px */
+    min-height: 100%;
+}
+.bg-leather-dark {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    background-size: 8px 8px, auto auto;
+}
