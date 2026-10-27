@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Apotek Arsyila - Sistem Kendali</title>
+<title>Anton Cell - Sistem Kasir & Keuangan</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -65,7 +65,7 @@ tailwind.config = {
 
 <!-- PWA / STANDALONE APP CONFIG -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e40af">
+<meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="POS Usaha">
@@ -148,7 +148,7 @@ tailwind.config = {
     <img src="logo-apotek.png" class="w-full h-full object-contain drop-shadow-md">
 </div>
                             <div class="group-active:opacity-80 transition-opacity">
-  <h1 class="text-white font-bold text-lg tracking-tight" id="namaApotekHeader">Apotek Arsyila</h1>
+  <h1 class="text-white font-bold text-lg tracking-tight" id="namaApotekHeader">Anton Cell</h1>
                                 <p class="text-corporate-100 text-[10px] mt-0.5 font-medium tracking-wide uppercase"><i class="fa-solid fa-location-dot mr-1"></i>Sistem Kasir</p>
                             </div>
                         </div>
@@ -183,9 +183,51 @@ tailwind.config = {
                 </div>
             </div>
 
+
+            <!-- ================= MODUL OPERASIONAL ANTON CELL ================= -->
+            <div class="px-6 mt-5">
+                <h3 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-amber-500"></i> Modul Operasional Anton Cell
+                </h3>
+                <div class="grid grid-cols-3 gap-2.5">
+                    <!-- 1. BRILink & Keuangan -->
+                    <div onclick="bukaModalBRILink()" class="bg-gradient-to-br from-blue-900 to-indigo-900 hover:from-blue-800 hover:to-indigo-800 text-white rounded-2xl p-3 flex flex-col items-center justify-between text-center shadow-md active:scale-95 transition-transform cursor-pointer border border-blue-400/30 group min-h-[110px]">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center text-lg mb-1 group-hover:scale-110 transition-transform shadow-inner">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-tight block leading-tight text-white">BRILink &<br>Keuangan</span>
+                            <span class="text-[8px] text-amber-300 font-bold block mt-0.5">Transfer/Tarik</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Pulsa & PPOB -->
+                    <div onclick="bukaModalPPOB()" class="bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-2xl p-3 flex flex-col items-center justify-between text-center shadow-md active:scale-95 transition-transform cursor-pointer border border-slate-700/50 group min-h-[110px]">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-400 flex items-center justify-center text-lg mb-1 group-hover:scale-110 transition-transform shadow-inner">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-tight block leading-tight text-white">Pulsa &<br>PPOB</span>
+                            <span class="text-[8px] text-blue-300 font-bold block mt-0.5">Data & PLN</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Etalase Ritel -->
+                    <div onclick="bukaLayar('etalase')" class="bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-2xl p-3 flex flex-col items-center justify-between text-center shadow-md active:scale-95 transition-transform cursor-pointer border border-amber-300/40 group min-h-[110px]">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 border border-white/40 text-white flex items-center justify-center text-lg mb-1 group-hover:scale-110 transition-transform shadow-inner">
+                            <i class="fa-solid fa-shop"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-tight block leading-tight text-white">Etalase<br>Ritel</span>
+                            <span class="text-[8px] text-amber-100 font-bold block mt-0.5">Aksesoris HP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex gap-3 px-6 mt-5">
                 <button onclick="bukaModalTambahObatMobile()" class="flex-1 bg-corporate-600 hover:bg-corporate-700 text-white rounded-2xl py-3 flex items-center justify-center gap-2 font-bold text-xs shadow-md transition-transform active:scale-95">
-                    <i class="fa-solid fa-plus"></i> Tambah Obat
+                    <i class="fa-solid fa-plus"></i> Tambah Barang
                 </button>
                 <button onclick="bukaLayar('laporan')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl py-3 flex items-center justify-center gap-2 font-bold text-xs shadow-md transition-transform active:scale-95">
                     <i class="fa-solid fa-chart-pie"></i> Laporan Keuangan
@@ -294,7 +336,7 @@ tailwind.config = {
 
             <div class="px-6 mt-8">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-fire text-orange-500 mr-1"></i> Obat Terlaris</h3>
+                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-fire text-orange-500 mr-1"></i> Produk Terlaris</h3>
                 </div>
                 <div class="flex justify-center mt-2 mb-4">
                     <button onclick="bukaSidebarTrafik()" class="bg-blue-50 text-blue-700 px-6 py-2 rounded-full font-bold text-sm shadow-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2">
@@ -309,13 +351,13 @@ tailwind.config = {
                       <div id="wadahPantauanSistem" class="flex gap-3 overflow-x-auto pb-6 hide-scrollbar snap-x scroll-smooth">
 
                     <!-- 1. KARTU: OBAT TERJUAL (Klik -> Buka Pop Up Data Hari Ini) -->
-                    <div onclick="bukaRincianPantauan('Obat Terjual')" class="min-w-[140px] bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm snap-start relative overflow-hidden cursor-pointer hover:border-emerald-300 active:scale-95 transition-all">
+                    <div onclick="bukaRincianPantauan('Barang Terjual')" class="min-w-[140px] bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm snap-start relative overflow-hidden cursor-pointer hover:border-emerald-300 active:scale-95 transition-all">
                         <div class="absolute right-[-10px] top-0 bottom-0 w-20 bg-emerald-50/60 rounded-l-full -z-0"></div>
                         <div class="flex justify-between items-start mb-4 relative z-10">
                             <div class="h-9 w-9 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg"><i class="fa-solid fa-pills"></i></div>
                             <span class="text-3xl font-black text-emerald-600" id="berandaObatTerjual">0</span>
                         </div>
-                        <span class="text-[11px] font-black text-slate-800 uppercase mt-auto relative z-10 leading-tight">Obat Terjual</span>
+                        <span class="text-[11px] font-black text-slate-800 uppercase mt-auto relative z-10 leading-tight">Barang Terjual</span>
                         <span class="text-[10px] font-medium text-slate-500 relative z-10 mt-0.5">Laku Hari Ini</span>
                     </div>
 
@@ -331,13 +373,13 @@ tailwind.config = {
                     </div>
 
                     <!-- 3. KARTU: JENIS OBAT (Klik -> Buka Pop Up Data Master) -->
-                    <div onclick="bukaRincianPantauan('Jenis Obat')" class="min-w-[140px] bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm snap-start relative overflow-hidden cursor-pointer hover:border-teal-300 active:scale-95 transition-all">
+                    <div onclick="bukaRincianPantauan('Kategori Produk')" class="min-w-[140px] bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm snap-start relative overflow-hidden cursor-pointer hover:border-teal-300 active:scale-95 transition-all">
                         <div class="absolute right-[-10px] top-0 bottom-0 w-20 bg-teal-50/60 rounded-l-full -z-0"></div>
                         <div class="flex justify-between items-start mb-4 relative z-10">
                             <div class="h-9 w-9 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center text-lg"><i class="fa-solid fa-tags"></i></div>
                             <span class="text-3xl font-black text-teal-600" id="berandaJenis">0</span>
                         </div>
-                        <span class="text-[11px] font-black text-slate-800 uppercase mt-auto relative z-10 leading-tight">Jenis Obat</span>
+                        <span class="text-[11px] font-black text-slate-800 uppercase mt-auto relative z-10 leading-tight">Kategori Produk</span>
                         <span class="text-[10px] font-medium text-slate-500 relative z-10 mt-0.5">Total Terdaftar</span>
                     </div>
 
@@ -371,14 +413,14 @@ tailwind.config = {
                         </div>
                     </div>
 
-                    <!-- 6. KARTU: KEDALUWARSA (Klik -> Buka Pop Up Data Expired) -->
-                    <div onclick="bukaRincianPantauan('Kedaluwarsa')" class="min-w-[140px] bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm snap-start relative overflow-hidden cursor-pointer hover:border-purple-300 active:scale-95 transition-all">
+                    <!-- 6. KARTU: GARANSI & RETUR (Klik -> Buka Pop Up Data Expired) -->
+                    <div onclick="bukaRincianPantauan('Garansi / Retur')" class="min-w-[140px] bg-white border border-slate-200 rounded-2xl p-4 flex flex-col shadow-sm snap-start relative overflow-hidden cursor-pointer hover:border-purple-300 active:scale-95 transition-all">
                         <div class="absolute right-[-10px] top-0 bottom-0 w-20 bg-purple-50/60 rounded-l-full -z-0"></div>
                         <div class="flex justify-between items-start mb-4 relative z-10">
                             <div class="h-9 w-9 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-lg"><i class="fa-solid fa-calendar-xmark"></i></div>
                             <span class="text-3xl font-black text-purple-600" id="berandaKedaluwarsa">0</span>
                         </div>
-                        <span class="text-[11px] font-black text-slate-800 uppercase mt-auto relative z-10 leading-tight">Kedaluwarsa</span>
+                        <span class="text-[11px] font-black text-slate-800 uppercase mt-auto relative z-10 leading-tight">Garansi / Retur</span>
                         <span class="text-[10px] font-medium text-slate-500 relative z-10 mt-0.5">Dalam 30 Hari</span>
                     </div>
                 </div>
@@ -390,13 +432,13 @@ tailwind.config = {
                 <div class="flex items-center gap-3">
                     <button onclick="bukaLayar('beranda')" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-transform"><i class="fa-solid fa-arrow-left"></i></button>
                     <div>
-                        <h2 class="font-black text-corporate-900 text-2xl tracking-tight uppercase">Buku Exp/Rusak/Hilang</h2>
+                        <h2 class="font-black text-corporate-900 text-2xl tracking-tight uppercase">Buku Barang Rusak/Retur</h2>
                         <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Siklus Berjalan</p>
                     </div>
                 </div>
             </div>
 
-            <div class="px-6 py-4"><button onclick="bukaModalPenyusutanMobile()" class="w-full bg-white border border-slate-200 rounded-2xl pl-4 pr-4 py-3.5 text-sm font-semibold text-slate-400 shadow-sm flex items-center gap-3 hover:border-rose-300 transition-all active:scale-95"><i class="fa-solid fa-search text-slate-400"></i> Cari obat yang ingin disusutkan / dibuang...</button></div>
+            <div class="px-6 py-4"><button onclick="bukaModalPenyusutanMobile()" class="w-full bg-white border border-slate-200 rounded-2xl pl-4 pr-4 py-3.5 text-sm font-semibold text-slate-400 shadow-sm flex items-center gap-3 hover:border-rose-300 transition-all active:scale-95"><i class="fa-solid fa-search text-slate-400"></i> Cari barang yang ingin disusutkan / dibuang...</button></div>
 
             <div class="px-6 py-5 space-y-3" id="daftarBukuRusakMobile">
             </div>
@@ -577,7 +619,7 @@ tailwind.config = {
             <div class="px-6 py-4">
                 <div class="relative group">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="cariEtalaseMobile" oninput="renderEtalaseMobile()" placeholder="Cari obat di etalase..." class="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none">
+                    <input type="text" id="cariEtalaseMobile" oninput="renderEtalaseMobile()" placeholder="Cari barang di etalase..." class="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none">
                 </div>
             </div>
             <div class="px-6 space-y-3" id="daftarEtalaseMobile"></div>
@@ -612,7 +654,7 @@ tailwind.config = {
                                         <i class="fa-solid fa-box-archive"></i> Cetak Arsip (Tahun 2000)
                                     </button>
                                     <button onclick="exportPDFMasterGudang(); toggleDropdownExportPDF();" class="text-left px-3 py-2.5 text-xs font-bold text-slate-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors shadow-sm flex items-center gap-2 mt-1">
-                                        <i class="fa-solid fa-boxes-packing"></i> Daftar Obat
+                                        <i class="fa-solid fa-boxes-packing"></i> Daftar Barang & Produk
                                     </button>
                                 </div>
                             </div>
@@ -725,7 +767,7 @@ tailwind.config = {
             <div class="flex justify-center pt-3 pb-2" onclick="tutupModalMobile('modalTransferMobile')"><div class="w-12 h-1.5 bg-slate-200 rounded-full"></div></div>
             <div class="px-6 pb-4 border-b border-slate-100 flex items-center gap-3">
                 <div class="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 border border-emerald-100"><i class="fa-solid fa-truck-fast"></i></div>
-                <div><h3 class="font-bold text-slate-800 text-lg leading-tight">Transfer ke Etalase</h3><p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pindah Stok Obat</p></div>
+                <div><h3 class="font-bold text-slate-800 text-lg leading-tight">Transfer ke Etalase</h3><p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Pindah Stok Barang</p></div>
             </div>
             <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-5">
@@ -755,7 +797,7 @@ tailwind.config = {
             <button type="button" id="btnHeaderKunciEdit" onclick="aktifkanModeEditMobile()" class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 flex items-center justify-between shadow-md relative z-20 transition-all text-left w-full active:scale-[0.99]">
                 <div class="flex flex-col">
                     <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2" id="teksHeaderKunciEdit">
-                        <i class="fa-solid fa-pen text-blue-300"></i> Edit Data Obat
+                        <i class="fa-solid fa-pen text-blue-300"></i> Edit Data Barang
                     </h3>
                     <p class="text-[10px] text-blue-200 font-medium mt-0.5" id="subTeksHeaderKunci">Mode Terkunci 🔒 (Ketuk untuk Edit)</p>
                 </div>
@@ -769,7 +811,7 @@ tailwind.config = {
             </div>
             <div class="p-6 overflow-y-auto hide-scrollbar flex-1 space-y-4">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider pl-1">Nama Obat</label>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider pl-1">Nama Barang / Produk</label>
                     <input type="text" id="editNamaMobile" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none transition-all">
                 </div>
                 <div>
@@ -895,7 +937,7 @@ tailwind.config = {
                         <input type="number" id="editStokMobile" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider pl-1">Kedaluwarsa</label>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider pl-1">Garansi / Retur</label>
                         <input type="date" id="editExpiredMobile" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-[11px] font-semibold text-slate-600 focus:outline-none transition-all">
                     </div>
                 </div>
@@ -1158,7 +1200,7 @@ tailwind.config = {
         <div class="bg-leather-green w-full h-[95vh] sm:h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelTambahObatMobile">
 
             <div class="px-6 py-5 flex items-center justify-between relative z-20">
-                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-box-open text-[#d97706]"></i> <span class="drop-shadow-md">Obat Baru</span></h3>
+                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-box-open text-[#d97706]"></i> <span class="drop-shadow-md">Produk Baru</span></h3>
                 <button onclick="tutupModalMobile('modalTambahObatMobile')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors border border-white/20"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
@@ -1171,7 +1213,7 @@ tailwind.config = {
                     <h4 class="font-black text-slate-800 text-[15px] mb-4">Profil & Satuan Dasar</h4>
 
                     <div class="mb-4">
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Obat <span class="text-red-500">*</span></label>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Barang / Produk <span class="text-red-500">*</span></label>
                         <div class="flex gap-2">
                             <input type="text" id="tambahNamaMobile" onfocus="tampilkanKolomVarianMobile()" placeholder="Cth: Bodrex" class="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-[#d97706] transition-all">
                             <button id="btnUI_tambah_qr" onclick="bukaScannerKameraMobile('tambah_qr')" class="w-12 h-12 bg-white text-[#d97706] rounded-2xl flex flex-col items-center justify-center shrink-0 border border-slate-200 shadow-sm active:scale-95 transition-all gap-0.5"><i class="fa-solid fa-qrcode text-xl leading-none"></i><span id="teksUI_tambah_qr" class="text-[6px] font-black uppercase tracking-widest hidden">Rekam</span></button>
@@ -1308,7 +1350,7 @@ tailwind.config = {
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Kedaluwarsa</label>
+                            <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Garansi / Retur</label>
                             <input type="date" id="tambahExpiredMobile" class="w-full bg-white border border-slate-200 rounded-2xl px-3 py-3 text-[11px] font-bold text-slate-600 focus:outline-none">
                         </div>
                         <div class="flex flex-col justify-end">
@@ -1423,14 +1465,14 @@ tailwind.config = {
                 <!-- BLOK 1: PROFIL APOTEK -->
                 <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden select-none">
                     <div class="flex justify-between items-center p-4 cursor-pointer bg-slate-50" onclick="toggleAkordeonSetelan('setelan-profil')">
-                        <h4 class="text-[11px] font-black text-corporate-700 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-store text-corporate-500"></i> Profil Apotek</h4>
+                        <h4 class="text-[11px] font-black text-corporate-700 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-store text-corporate-500"></i> Profil Anton Cell</h4>
                         <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform duration-300" id="icon-setelan-profil"></i>
                     </div>
 
                                         <div id="setelan-profil" class="hidden px-4 pb-4 pt-4 border-t border-slate-100 space-y-4">
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider pl-1">Nama Apotek</label>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider pl-1">Nama Anton Cell</label>
                             <input type="text" id="setNamaMobile" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none transition-all">
                         </div>
 
@@ -1527,7 +1569,7 @@ tailwind.config = {
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalHapusCerdasMobile')"></div>
         <div class="bg-[#f8fafc] w-full max-h-[85vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelHapusCerdasMobile">
             <div class="bg-gradient-to-r from-red-600 to-red-800 px-6 py-5 flex items-center justify-between shadow-md relative z-20">
-                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-trash-can text-red-300"></i> Hapus Data Obat</h3>
+                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-trash-can text-red-300"></i> Hapus Data Barang</h3>
                 <button onclick="tutupModalMobile('modalHapusCerdasMobile')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 bg-white border-b border-slate-100">
@@ -1642,7 +1684,7 @@ tailwind.config = {
             </div> <!-- INI ADALAH PENUTUP DIV YANG SEMPAT HILANG -->
 
             <div class="mt-5 relative inline-block cursor-pointer group w-full" onclick="bukaModalSetelanMobile(); tutupSidebarKiriMobile()">
-                <h2 class="font-black text-[22px] tracking-tight pr-6 leading-none" id="namaApotekSidebar">Apotek Arsyila</h2>
+                <h2 class="font-black text-[22px] tracking-tight pr-6 leading-none" id="namaApotekSidebar">Anton Cell</h2>
                 <p class="text-corporate-100 text-[10px] mt-1 font-bold tracking-widest uppercase opacity-80">Ketuk untuk ubah profil</p>
                 <div class="absolute top-0 right-0 text-white/40 group-hover:text-white transition-colors">
                     <i class="fa-solid fa-pen text-xs"></i>
@@ -1663,7 +1705,7 @@ tailwind.config = {
                 <div><span class="block text-sm font-black text-slate-700 mb-0.5">Hub Pengaturan</span><span class="block text-[9px] text-slate-500 font-bold uppercase tracking-wider">Konfigurasi Sistem</span></div>
             </button>
 
-            <button onclick="tutupSidebarKiriMobile(); setTimeout(() => window.open('https://wa.me/6281235064233?text=Halo%20Tim%20Bantuan%20IT%2C%20saya%20membutuhkan%20dukungan%20teknis%20terkait%20aplikasi%20Sistem%20Kasir%20Apotek%20Arsyila.', '_blank'), 300);" class="w-full flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-200 transition-all active:scale-95 text-left group">
+            <button onclick="tutupSidebarKiriMobile(); setTimeout(() => window.open('https://wa.me/6285849337329?text=Halo%20Tim%20Bantuan%20IT%2C%20saya%20membutuhkan%20dukungan%20teknis%20terkait%20aplikasi%20Sistem%20Kasir%20Anton Cell%20Arsyila.', '_blank'), 300);" class="w-full flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-200 transition-all active:scale-95 text-left group">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors"><i class="fa-solid fa-headset"></i></div>
                 <div><span class="block text-sm font-black text-slate-700 mb-0.5">Kontak Server</span><span class="block text-[9px] text-slate-500 font-bold uppercase tracking-wider">Bantuan Teknis IT</span></div>
             </button>
@@ -1746,11 +1788,167 @@ tailwind.config = {
             <div class="bg-gradient-to-r from-corporate-700 to-corporate-900 px-6 py-5 flex items-center justify-between shadow-md relative z-20">
                 <div>
                     <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2 truncate pr-4" id="detailObatNamaTitle">-</h3>
-                    <p class="text-[9px] text-corporate-200 font-bold uppercase tracking-widest mt-0.5">Rincian & Neraca Mikro</p>
+                    <p class="text-[9px] text-corporate-200 font-bold uppercase tracking-widest mt-0.5">Rincian & Neraca Produk</p>
                 </div>
                 <button onclick="tutupModalMobile('modalDetailObatMobile')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors shrink-0"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto hide-scrollbar p-5" id="bodyDetailObatMobile"></div>
+        </div>
+    </div>
+
+
+    <!-- MODAL LOKET BRILINK & KEUANGAN -->
+    <div id="modalBRILink" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalBRILink')"></div>
+        <div class="bg-white w-full max-h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelBRILink">
+            <div class="bg-gradient-to-r from-blue-900 to-slate-900 px-6 py-4 flex items-center justify-between shadow-md">
+                <div>
+                    <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-building-columns text-amber-400"></i> Loket BRILink & Keuangan</h3>
+                    <p class="text-[9px] text-blue-200 font-bold uppercase tracking-widest mt-0.5">Double-Entry Cash & EDC Balance System</p>
+                </div>
+                <button onclick="tutupModalMobile('modalBRILink')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-2 uppercase tracking-wider">Jenis Layanan Keuangan</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btnBRILinkTransfer" onclick="pilihModeBRILink('TRANSFER')" class="py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-blue-700 text-white border-blue-800 shadow-sm">
+                            <i class="fa-solid fa-paper-plane"></i> Transfer / Kirim
+                        </button>
+                        <button type="button" id="btnBRILinkTarik" onclick="pilihModeBRILink('TARIK')" class="py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200">
+                            <i class="fa-solid fa-hand-holding-dollar"></i> Tarik Tunai
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" id="inputBRILinkMode" value="TRANSFER">
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Pelanggan</label>
+                    <input type="text" id="inputBRILinkPelanggan" placeholder="Cth: Budi Santoso" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">No. Rek / Kartu / Bank</label>
+                        <input type="text" id="inputBRILinkRekening" placeholder="BRI / BCA / Mandiri / No.Rek" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nominal Transaksi (Rp)</label>
+                        <input type="text" inputmode="numeric" id="inputBRILinkNominal" oninput="formatAngkaRibuan(this); hitungOtomatisBRILink();" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-blue-700 focus:outline-none focus:border-blue-500 shadow-inner">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Biaya Admin (Rp)</label>
+                        <input type="text" inputmode="numeric" id="inputBRILinkAdmin" oninput="formatAngkaRibuan(this); hitungOtomatisBRILink();" placeholder="Rp 0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-black text-amber-700 focus:outline-none focus:border-amber-500 shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Catatan Opsional</label>
+                        <input type="text" id="inputBRILinkCatatan" placeholder="Cth: Transfer Sesama BRI" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                    </div>
+                </div>
+
+                <!-- Double-Entry Preview Box -->
+                <div class="bg-slate-900 text-white p-4 rounded-2xl border border-slate-800 space-y-2 text-xs shadow-inner">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest"><i class="fa-solid fa-scale-balanced mr-1"></i> Preview Double-Entry System</span>
+                        <span class="text-[9px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded font-bold uppercase" id="previewBRILinkLabel">Transfer</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[11px]">
+                        <span class="text-slate-300">💵 Uang Laci Fisik:</span>
+                        <span class="font-black text-emerald-400" id="previewBRILinkFisik">+ Rp 0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[11px]">
+                        <span class="text-slate-300">💳 Saldo EDC / Bank:</span>
+                        <span class="font-black text-rose-400" id="previewBRILinkBank">- Rp 0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[11px] pt-1 border-t border-slate-800/80">
+                        <span class="text-amber-300 font-bold">💰 Pendapatan Fee Admin (Laba):</span>
+                        <span class="font-black text-amber-400" id="previewBRILinkLaba">+ Rp 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t border-slate-100 bg-white">
+                <button onclick="prosesTransaksiBRILink()" class="w-full bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-black py-4 rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wider border border-blue-500">
+                    <i class="fa-solid fa-check-double text-lg"></i> Eksekusi Transaksi BRILink
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LAYANAN PULSA & PPOB -->
+    <div id="modalPPOB" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalPPOB')"></div>
+        <div class="bg-white w-full max-h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelPPOB">
+            <div class="bg-gradient-to-r from-slate-900 to-blue-900 px-6 py-4 flex items-center justify-between shadow-md">
+                <div>
+                    <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-mobile-screen-button text-blue-400"></i> Layanan Pulsa & PPOB</h3>
+                    <p class="text-[9px] text-blue-200 font-bold uppercase tracking-widest mt-0.5">Produk Digital & Tagihan Online</p>
+                </div>
+                <button onclick="tutupModalMobile('modalPPOB')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Kategori Produk Digital</label>
+                    <select id="inputPPOBKategori" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                        <option value="Pulsa Reguler">Pulsa Reguler (Telkomsel, Indosat, XL, Tri, Smartfren)</option>
+                        <option value="Paket Data">Paket Data / Kuota Internet</option>
+                        <option value="Token PLN">Token Listrik PLN</option>
+                        <option value="Tagihan PPOB">Tagihan PPOB (PLN Pasca, PDAM, BPJS)</option>
+                        <option value="Voucher Game">Voucher Game & E-Wallet (Dana, OVO, Gopay, ShopeePay)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">No. HP / ID Pelanggan / No. Meter</label>
+                    <input type="text" id="inputPPOBTarget" placeholder="Cth: 085849337329 / 1400xxxx" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Produk / Nominal</label>
+                    <input type="text" id="inputPPOBNamaProduk" placeholder="Cth: Pulsa Telkomsel 50rb / Token PLN 100rb" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Modal HPP (Rp)</label>
+                        <input type="text" inputmode="numeric" id="inputPPOBModal" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Harga Jual (Rp)</label>
+                        <input type="text" inputmode="numeric" id="inputPPOBJual" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-black text-amber-700 focus:outline-none focus:border-amber-500 shadow-inner">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Metode Pembayaran Pelanggan</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ppobMetode" value="Tunai" class="peer sr-only" checked>
+                            <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-600 shadow-sm">Tunai</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ppobMetode" value="QRIS" class="peer sr-only">
+                            <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-700 shadow-sm">QRIS / Bank</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ppobMetode" value="Debt" class="peer sr-only">
+                            <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-600 shadow-sm">Kasbon</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t border-slate-100 bg-white">
+                <button onclick="prosesTransaksiPPOB()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black py-4 rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wider border border-amber-400">
+                    <i class="fa-solid fa-bolt text-lg"></i> Proses Transaksi Digital
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1851,7 +2049,7 @@ tailwind.config = {
         <div class="letter-landscape">
             <div class="top-header">
                 <div class="brand-text">
-                    <h1 id="p-nama-apotek">APOTEK ARSYILA</h1>
+                    <h1 id="p-nama-apotek">ANTON CELL</h1>
                     <p>Buku Besar & Neraca Keuangan Komprehensif</p>
                 </div>
                 <div class="info-panel">
@@ -1886,7 +2084,7 @@ tailwind.config = {
                 </tfoot>
             </table>
 
-            <div class="section-title mt-4" style="margin-top: 15px;">B. RINCIAN KERUGIAN BARANG RUSAK / KEDALUWARSA</div>
+            <div class="section-title mt-4" style="margin-top: 15px;">B. RINCIAN KERUGIAN BARANG RUSAK / GARANSI & RETUR</div>
             <table class="table-cetak">
                 <thead>
                     <tr>
@@ -1982,7 +2180,7 @@ tailwind.config = {
                 <!-- Pencarian -->
                 <div class="relative mb-4">
                     <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="inputCariPenyusutan" onkeyup="cariObatPenyusutan()" placeholder="Ketik nama obat yg rusak..." class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-2xl pl-11 pr-4 py-3.5 focus:outline-none shadow-sm placeholder:text-slate-400 font-bold transition-all">
+                    <input type="text" id="inputCariPenyusutan" onkeyup="cariObatPenyusutan()" placeholder="Ketik nama barang yg rusak..." class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-2xl pl-11 pr-4 py-3.5 focus:outline-none shadow-sm placeholder:text-slate-400 font-bold transition-all">
                 </div>
 
                 <!-- Wadah Hasil Cari -->
@@ -1993,7 +2191,7 @@ tailwind.config = {
 
                     <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-3">
                         <div class="flex-1 pr-3">
-                            <h4 id="penyu_nama_induk" class="font-black text-slate-800 text-lg leading-tight mb-1">Nama Obat</h4>
+                            <h4 id="penyu_nama_induk" class="font-black text-slate-800 text-lg leading-tight mb-1">Nama Barang / Produk</h4>
                             <span id="penyu_kategori" class="text-[9px] font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded-md uppercase tracking-widest">Kategori</span>
                         </div>
                         <button onclick="batalPilihPenyusutan()" class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-lg active:scale-95 transition-all shadow-sm shrink-0"><i class="fa-solid fa-rotate-left"></i> Ganti</button>
@@ -2048,7 +2246,7 @@ tailwind.config = {
         </div>
     </div>
 <!-- ==================================== -->
-    <!-- MODAL BUKU CATATAN DEFECTA (Z-160)   -->
+    <!-- MODAL BUKU CATATAN BARANG KOSONG (Z-160)   -->
     <!-- ==================================== -->
     <div id="modalBukuCatatan" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalBukuCatatan()"></div>
@@ -2057,7 +2255,7 @@ tailwind.config = {
             <div class="bg-leather-dark px-6 py-4 flex items-center justify-between shadow-md relative z-20 shrink-0">
                 <div>
                     <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2"><i class="fa-solid fa-book-journal-whills text-slate-300"></i> Buku Catatan</h3>
-                    <p class="text-[9px] text-slate-300 font-bold uppercase tracking-widest mt-0.5">Defecta / Lost Sales</p>
+                    <p class="text-[9px] text-slate-300 font-bold uppercase tracking-widest mt-0.5">Catatan Barang Kosong</p>
                 </div>
                 <button onclick="tutupModalBukuCatatan()" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -2065,7 +2263,7 @@ tailwind.config = {
             <div class="flex-1 overflow-y-auto hide-scrollbar bg-[#fdfbf7]">
                 <div class="ruled-paper pt-2" id="wadahKertasBukuCatatan">
                     <div class="flex gap-2 items-center h-[32px] mb-2 -ml-2">
-                        <input type="text" id="inputBukuCatatan" placeholder="Tuliskan nama obat yang dicari pasien..." class="flex-1 bg-transparent border-none px-2 py-1 text-sm italic font-medium text-blue-900 placeholder-slate-400 focus:outline-none focus:ring-0">
+                        <input type="text" id="inputBukuCatatan" placeholder="Tuliskan nama barang yang dicari pelanggan..." class="flex-1 bg-transparent border-none px-2 py-1 text-sm italic font-medium text-blue-900 placeholder-slate-400 focus:outline-none focus:ring-0">
                         <button onclick="simpanBukuCatatan()" class="w-8 h-8 text-blue-900/60 hover:text-blue-900 flex items-center justify-center shrink-0 transition-all"><i class="fa-solid fa-pen"></i></button>
                     </div>
                     <div id="wadahListBukuCatatan"></div>
@@ -2117,7 +2315,7 @@ tailwind.config = {
                 </div>
             </div>
 
-            <button onclick="bukaModalBukuCatatan(); tutupSidebarTrafik()" class="w-full mt-3 bg-amber-50 text-amber-600 border border-amber-200 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95 flex items-center justify-center gap-2"><i class="fa-solid fa-book-open"></i> Buka Buku Defecta / Catatan</button>
+            <button onclick="bukaModalBukuCatatan(); tutupSidebarTrafik()" class="w-full mt-3 bg-amber-50 text-amber-600 border border-amber-200 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95 flex items-center justify-center gap-2"><i class="fa-solid fa-book-open"></i> Buka Buku Barang Kosong / Catatan</button>
         </div>
 
         <div class="flex-1 overflow-y-auto hide-scrollbar p-5 space-y-6">
