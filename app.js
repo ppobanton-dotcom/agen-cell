@@ -27,7 +27,7 @@ let bukuCatatan = []; // DATABASE CATATAN BARANG KOSONG (LOST SALES)
 // --- DATABASE KHUSUS PENYUSUTAN (BARANG RUSAK/HILANG/EXPIRED) ---
 let historiPenyusutan = [];
 let penyusutanObatTerpilih = null; // Variabel penyimpan sementara di modal
-let activeStoreCode = localStorage.getItem('antoncell_active_store') || null;
+let activeStoreCode = localStorage.getItem('antoncell_active_store') || 'ANTON';
 let offlineQueue = [];
 
 // TUGAS QW-1: SENTRALISASI PENYIMPANAN LOCAL STORAGE (ANTI-CRASH & DRY)
@@ -5520,91 +5520,49 @@ prosesSimpanSetelanMobile = function() {
 }
 
 window.onload = () => {
-    if (!activeStoreCode) {
-        document.getElementById('loginOverlay').classList.remove('hidden');
-        document.getElementById('appContent').classList.add('hidden');
-        return;
-    } else {
-        initApp();
-    }
+    initApp();
 };
 
 function initApp() {
-    document.getElementById('loginOverlay').classList.add('hidden');
-    document.getElementById('appContent').classList.remove('hidden');
+    if (!activeStoreCode) {
+        activeStoreCode = 'ANTON';
+        localStorage.setItem('antoncell_active_store', 'ANTON');
+    }
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    if (loginOverlay) {
+        loginOverlay.classList.add('hidden');
+        loginOverlay.style.display = 'none';
+    }
+    const appContent = document.getElementById('appContent');
+    if (appContent) {
+        appContent.classList.remove('hidden');
+    }
 
     loadApotekData();
     syncOfflineData();
 
     try {
         let p = JSON.parse(localStorage.getItem('antoncell_profilData_' + activeStoreCode));
+        if (!p) {
+            p = profilApotek;
+            localStorage.setItem('antoncell_profilData_' + activeStoreCode, JSON.stringify(p));
+        }
         if(p) {
             profilApotek = p;
-            document.getElementById('namaApotekHeader').innerText = p.nama;
+            if(document.getElementById('namaApotekHeader')) document.getElementById('namaApotekHeader').innerText = p.nama;
             if(document.getElementById('namaApotekSidebar')) document.getElementById('namaApotekSidebar').innerText = p.nama;
-            document.getElementById('setNamaMobile').value = p.nama;
-                    }
+            if(document.getElementById('setNamaMobile')) document.getElementById('setNamaMobile').value = p.nama;
+        }
     } catch(e) {}
     renderBerandaMobile();
 }
 
 // ==========================================
-// MESIN OTENTIKASI SUPABASE (ENTERPRISE)
+// MESIN OTENTIKASI SUPABASE (BYPASSED)
 // ==========================================
 async function prosesLogin() {
-    const emailInput = document.getElementById('loginEmail').value.trim();
-    const passwordInput = document.getElementById('loginPassword').value;
-    
-    // PERBAIKAN: Cari tombol berdasarkan tipe submit, bukan onclick
-    const btnOtorisasi = document.querySelector('button[type="submit"]');
-    const teksAsli = btnOtorisasi ? btnOtorisasi.innerHTML : 'Otorisasi';
-
-    // 1. Pencegat Kolom Kosong
-    if (!emailInput || !passwordInput) {
-        return alert('⚠️ Email dan Sandi Akses wajib diisi!');
-    }
-
-    // 2. Efek Loading Profesional (Aman dari Crash)
-    if (btnOtorisasi) {
-        btnOtorisasi.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-lg"></i> Memverifikasi...';
-        btnOtorisasi.disabled = true;
-    }
-
-    try {
-        // 3. Tembak Data ke Brankas Supabase
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: emailInput,
-            password: passwordInput,
-        });
-
-        if (error) throw error;
-
-        // 4. Logika Pengenalan Gerai Otomatis (Tanpa Pilihan Toko)
-        let tokoTujuan = '';
-        let emailChecker = emailInput.toLowerCase();
-        
-        if (emailChecker.includes('arsyila')) {
-            tokoTujuan = 'ARSYILA';
-        } else if (emailChecker.includes('anton')) {
-            tokoTujuan = 'ANTON';
-        } else {
-            // Jika Anda menambah toko baru di masa depan
-            tokoTujuan = 'UMUM'; 
-        }
-
-        // 5. Buka Gerbang Kasir
-        loginSukses(tokoTujuan);
-
-    } catch (error) {
-        // Jika sandi salah atau email tidak terdaftar di Supabase
-        alert('⛔ Akses Ditolak: Kredensial tidak valid atau salah sandi!');
-    } finally {
-        // Kembalikan Tombol ke Semula jika gagal
-        if (btnOtorisasi) {
-            btnOtorisasi.innerHTML = teksAsli;
-            btnOtorisasi.disabled = false;
-        }
-    }
+    loginSukses('ANTON');
 }
 
 
@@ -5615,14 +5573,18 @@ function toggleSandi() {
     const inputSandi = document.getElementById('loginPassword');
     const ikonMata = document.getElementById('ikonMata');
 
-    if (inputSandi.type === 'password') {
+    if (inputSandi && inputSandi.type === 'password') {
         inputSandi.type = 'text';
-        ikonMata.classList.remove('fa-eye');
-        ikonMata.classList.add('fa-eye-slash');
-    } else {
+        if (ikonMata) {
+            ikonMata.classList.remove('fa-eye');
+            ikonMata.classList.add('fa-eye-slash');
+        }
+    } else if (inputSandi) {
         inputSandi.type = 'password';
-        ikonMata.classList.remove('fa-eye-slash');
-        ikonMata.classList.add('fa-eye');
+        if (ikonMata) {
+            ikonMata.classList.remove('fa-eye-slash');
+            ikonMata.classList.add('fa-eye');
+        }
     }
 }
 
@@ -5638,23 +5600,22 @@ function loginDenganGoogle() {
 }
 
 function loginSukses(toko) {
-    activeStoreCode = toko;
-    localStorage.setItem('antoncell_active_store', toko);
+    activeStoreCode = toko || 'ANTON';
+    localStorage.setItem('antoncell_active_store', activeStoreCode);
 
     // Set default profile if not exists
-    let p = JSON.parse(localStorage.getItem('antoncell_profilData_' + toko));
+    let p = JSON.parse(localStorage.getItem('antoncell_profilData_' + activeStoreCode));
     if (!p) {
-        let defaultNama = toko === 'ARSYILA' ? 'ANTON CELL' : 'TOKO OBAT ANTON';
-        let defaultProfile = { nama: defaultNama, alamat: "Desa Bahari Dua, Buton Selatan", telepon: "085849337329" };
-        localStorage.setItem('antoncell_profilData_' + toko, JSON.stringify(defaultProfile));
+        let defaultNama = 'ANTON CELL';
+        let defaultProfile = { nama: defaultNama, alamat: "Jl. Dayanu Ikhsanudin, Area Taman Hijau, Kota Baubau", telepon: "085849337329" };
+        localStorage.setItem('antoncell_profilData_' + activeStoreCode, JSON.stringify(defaultProfile));
     }
 
     initApp();
 }
 
 function prosesLogout() {
-    localStorage.removeItem('antoncell_active_store');
-    window.location.reload();
+    initApp();
 }
 
 
