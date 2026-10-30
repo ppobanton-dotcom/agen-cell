@@ -1603,6 +1603,69 @@ tailwind.config = {
             <!-- Area Akordeon Master -->
             <div class="p-6 overflow-y-auto hide-scrollbar flex-1 space-y-3">
 
+                <!-- BLOK: TARIF ADMIN TRANSAKSI -->
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden select-none">
+                    <div class="flex justify-between items-center p-4 cursor-pointer bg-slate-50" onclick="toggleAkordeonSetelan('setelan-tarif-admin-hub')">
+                        <h4 class="text-[11px] font-black text-corporate-700 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-tags text-corporate-500"></i> Tarif Admin Transaksi
+                        </h4>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform duration-300" id="icon-setelan-tarif-admin-hub"></i>
+                    </div>
+
+                    <div id="setelan-tarif-admin-hub" class="hidden px-4 pb-4 pt-4 border-t border-slate-100 space-y-3">
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Daftar Skema Fee Admin</p>
+                            <button type="button" class="bg-corporate-600 hover:bg-corporate-700 text-white font-black text-[10px] px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1 active:scale-95 transition-all uppercase tracking-wider">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-inner">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-100 text-slate-600 font-black uppercase text-[9px] tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-2.5">Rentang Transaksi</th>
+                                        <th class="p-2.5">Fee Admin</th>
+                                        <th class="p-2.5 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-2.5 font-bold">Rp 1 - Rp 1.000.000</td>
+                                        <td class="p-2.5 font-black text-amber-600">Rp 5.000</td>
+                                        <td class="p-2.5 text-center">
+                                            <div class="flex items-center justify-center gap-1">
+                                                <button type="button" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 flex items-center gap-1 text-[10px] font-bold border border-amber-200"><i class="fa-solid fa-pen"></i> Edit</button>
+                                                <button type="button" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-1 text-[10px] font-bold border border-red-200"><i class="fa-solid fa-trash"></i> Hapus</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-2.5 font-bold">Rp 1.000.001 - Rp 5.000.000</td>
+                                        <td class="p-2.5 font-black text-amber-600">Rp 10.000</td>
+                                        <td class="p-2.5 text-center">
+                                            <div class="flex items-center justify-center gap-1">
+                                                <button type="button" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 flex items-center gap-1 text-[10px] font-bold border border-amber-200"><i class="fa-solid fa-pen"></i> Edit</button>
+                                                <button type="button" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-1 text-[10px] font-bold border border-red-200"><i class="fa-solid fa-trash"></i> Hapus</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-2.5 font-bold">&gt; Rp 5.000.000</td>
+                                        <td class="p-2.5 font-black text-amber-600">Rp 15.000</td>
+                                        <td class="p-2.5 text-center">
+                                            <div class="flex items-center justify-center gap-1">
+                                                <button type="button" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 flex items-center gap-1 text-[10px] font-bold border border-amber-200"><i class="fa-solid fa-pen"></i> Edit</button>
+                                                <button type="button" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-1 text-[10px] font-bold border border-red-200"><i class="fa-solid fa-trash"></i> Hapus</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- BLOK 1: PROFIL APOTEK -->
                 <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden select-none">
                     <div class="flex justify-between items-center p-4 cursor-pointer bg-slate-50" onclick="toggleAkordeonSetelan('setelan-profil')">
@@ -1966,13 +2029,12 @@ tailwind.config = {
                 <input type="hidden" id="inputBRILinkMode" value="TRANSFER">
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana</label>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana Pelanggan</label>
                     <select id="inputBRILinkSumberDana" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
-                        <option value="BRI">Bank BRI</option>
-                        <option value="Seabank">SeaBank</option>
+                        <option value="Bank BRI">Bank BRI</option>
+                        <option value="SeaBank">SeaBank</option>
                         <option value="GoPay">GoPay</option>
                         <option value="DANA">DANA</option>
-                        <option value="Kartu Pelanggan">Kartu Pelanggan (Mesin EDC)</option>
                     </select>
                 </div>
 
@@ -2009,13 +2071,13 @@ tailwind.config = {
                         <label class="cursor-pointer">
                             <input type="radio" name="brilinkPotongAdmin" value="dalam" class="peer sr-only" checked>
                             <div class="py-2.5 px-3 rounded-lg text-center font-bold text-xs text-slate-600 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-sm transition-all flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-scissors text-xs"></i> Potong Dalam
+                                <i class="fa-solid fa-scissors text-xs"></i> Bayar di Dalam
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="brilinkPotongAdmin" value="luar" class="peer sr-only">
                             <div class="py-2.5 px-3 rounded-lg text-center font-bold text-xs text-slate-600 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:shadow-sm transition-all flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-plus-minus text-xs"></i> Potong Luar
+                                <i class="fa-solid fa-plus-minus text-xs"></i> Potong / Bayar di Luar
                             </div>
                         </label>
                     </div>
@@ -2064,7 +2126,7 @@ tailwind.config = {
 
             <div class="p-6 space-y-3.5 overflow-y-auto hide-scrollbar">
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">1. Uang Laci (Fisik)</label>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Uang Laci</label>
                     <div class="relative">
                         <i class="fa-solid fa-cash-register absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500"></i>
                         <input type="text" inputmode="numeric" id="inputShiftLaci" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
@@ -2072,7 +2134,7 @@ tailwind.config = {
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">2. Saldo Bank BRI</label>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Saldo BRI</label>
                     <div class="relative">
                         <i class="fa-solid fa-building-columns absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-600"></i>
                         <input type="text" inputmode="numeric" id="inputShiftBRI" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
@@ -2080,7 +2142,7 @@ tailwind.config = {
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">3. Saldo SeaBank</label>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Saldo SeaBank</label>
                     <div class="relative">
                         <i class="fa-solid fa-water-ladder absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-500"></i>
                         <input type="text" inputmode="numeric" id="inputShiftSeabank" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
@@ -2088,7 +2150,7 @@ tailwind.config = {
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">4. Saldo GoPay</label>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Saldo GoPay</label>
                     <div class="relative">
                         <i class="fa-solid fa-wallet absolute left-3.5 top-1/2 -translate-y-1/2 text-sky-500"></i>
                         <input type="text" inputmode="numeric" id="inputShiftGoPay" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
@@ -2096,7 +2158,7 @@ tailwind.config = {
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">5. Saldo DANA</label>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Saldo DANA</label>
                     <div class="relative">
                         <i class="fa-solid fa-money-bill-transfer absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-500"></i>
                         <input type="text" inputmode="numeric" id="inputShiftDANA" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
