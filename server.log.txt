@@ -1,91 +1,36 @@
-127.0.0.1 - - [27/Oct/2026 04:56:34] "HEAD /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:06] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:06] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:06] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:06] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:09] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:57:09] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:57:09] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:09] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:09] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:09] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:57:09] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:57:30] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:30] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:30] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:30] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:31] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:57:31] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:57:31] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:31] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:31] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:57:31] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:57:31] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:58:20] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:20] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:20] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:20] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:21] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:58:21] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:58:21] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:21] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:21] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:21] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:58:21] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:58:36] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:36] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:36] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:36] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:37] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:58:37] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:58:37] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:37] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:37] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:37] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:58:37] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:58:53] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:53] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:53] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:53] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:54] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:58:54] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:58:54] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:54] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:54] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:58:54] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:58:54] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:59:13] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:13] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:13] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:13] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:14] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:59:14] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 04:59:14] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:14] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:14] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 04:59:14] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 04:59:14] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 05:00:06] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:06] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:06] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:06] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:07] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 05:00:07] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 05:00:07] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:07] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:07] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:00:07] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 05:00:07] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 05:01:49] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:49] "GET /style.css HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:49] "GET /logo-apotek.png HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:49] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET /walpaper.jpg HTTP/1.1" 404 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET /sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET /index.html HTTP/1.1" 304 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET /app.js HTTP/1.1" 304 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET /manifest.json HTTP/1.1" 200 -
-127.0.0.1 - - [27/Oct/2026 05:01:51] code 404, message File not found
-127.0.0.1 - - [27/Oct/2026 05:01:51] "GET /walpaper.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [30/Oct/2026 00:21:44] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:45] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:45] "GET /logo-apotek.png HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:45] "GET /app.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:47] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:47] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:21:47] code 404, message File not found
+127.0.0.1 - - [30/Oct/2026 00:21:47] "GET /walpaper.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [30/Oct/2026 00:22:30] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:30] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:30] "GET /app.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:30] "GET /logo-apotek.png HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:31] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:31] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:22:31] code 404, message File not found
+127.0.0.1 - - [30/Oct/2026 00:22:31] "GET /walpaper.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [30/Oct/2026 00:23:01] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:01] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:01] "GET /logo-apotek.png HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:01] "GET /app.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:02] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:02] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:02] code 404, message File not found
+127.0.0.1 - - [30/Oct/2026 00:23:02] "GET /walpaper.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [30/Oct/2026 00:23:29] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:29] "GET /logo-apotek.png HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:29] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:29] "GET /app.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:30] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:30] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [30/Oct/2026 00:23:30] code 404, message File not found
+127.0.0.1 - - [30/Oct/2026 00:23:30] "GET /walpaper.jpg HTTP/1.1" 404 -
