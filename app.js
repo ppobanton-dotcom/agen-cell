@@ -8343,12 +8343,38 @@ document.addEventListener('pointerdown', function(e) {
 // ==========================================
 // MESIN MODUL BRILINK & KEUANGAN (DOUBLE-ENTRY)
 // ==========================================
+function onGantiSumberDanaBRILink() {
+    const sumberDana = document.getElementById('inputBRILinkSumberDana') ? document.getElementById('inputBRILinkSumberDana').value : '';
+    const potongAdminElem = document.querySelector('input[name="brilinkPotongAdmin"]:checked');
+    const tipePotong = potongAdminElem ? potongAdminElem.value : 'dalam';
+    const wadahDompetFee = document.getElementById('wadahDompetFeeBRILink');
+
+    if (wadahDompetFee) {
+        if (sumberDana === 'ATM Pelanggan' && tipePotong === 'dalam') {
+            wadahDompetFee.classList.remove('hidden');
+        } else {
+            wadahDompetFee.classList.add('hidden');
+        }
+    }
+    hitungOtomatisBRILink();
+}
+
+function onGantiTipePotonganAdminBRILink() {
+    onGantiSumberDanaBRILink();
+}
+
 function bukaModalBRILink() {
     document.getElementById('inputBRILinkPelanggan').value = '';
     document.getElementById('inputBRILinkRekening').value = '';
     document.getElementById('inputBRILinkNominal').value = '';
     document.getElementById('inputBRILinkAdmin').value = '';
     document.getElementById('inputBRILinkCatatan').value = '';
+    if (document.getElementById('inputBRILinkSumberDana')) {
+        document.getElementById('inputBRILinkSumberDana').value = 'Bank BRI';
+    }
+    const potongDalamRadio = document.querySelector('input[name="brilinkPotongAdmin"][value="dalam"]');
+    if (potongDalamRadio) potongDalamRadio.checked = true;
+    onGantiSumberDanaBRILink();
     pilihModeBRILink('TRANSFER');
     bukaModalMobile('modalBRILink', 'panelBRILink');
 }
@@ -8368,6 +8394,7 @@ function pilihModeBRILink(mode) {
         btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
         if (labelPreview) labelPreview.textContent = "Tarik Tunai";
     }
+    onGantiSumberDanaBRILink();
     hitungOtomatisBRILink();
 }
 
@@ -8381,6 +8408,7 @@ function hitungOtomatisBRILink() {
     const mode = document.getElementById('inputBRILinkMode') ? document.getElementById('inputBRILinkMode').value : 'TRANSFER';
     const rawNominal = document.getElementById('inputBRILinkNominal') ? document.getElementById('inputBRILinkNominal').value.replace(/\./g, '') : '0';
     const nominal = parseFloat(rawNominal) || 0;
+    const sumberDana = document.getElementById('inputBRILinkSumberDana') ? document.getElementById('inputBRILinkSumberDana').value : '';
 
     let adminInput = document.getElementById('inputBRILinkAdmin');
     let admin = 0;
@@ -8397,13 +8425,28 @@ function hitungOtomatisBRILink() {
     const previewFisik = document.getElementById('previewBRILinkFisik');
     const previewBank = document.getElementById('previewBRILinkBank');
     const previewLaba = document.getElementById('previewBRILinkLaba');
+    const rowFisik = document.getElementById('previewRowBRILinkFisik');
+    const rowBank = document.getElementById('previewRowBRILinkBank');
 
     if (previewFisik && previewBank && previewLaba) {
         if (mode === 'TRANSFER') {
-            previewFisik.textContent = "+ " + rupiah(nominal + admin);
-            previewBank.textContent = "- " + rupiah(nominal);
-            previewLaba.textContent = "+ " + rupiah(admin);
+            if (sumberDana === 'ATM Pelanggan') {
+                // When ATM Pelanggan is selected, primary transfer amount has zero impact on store assets.
+                // The Double-Entry Preview summary box must dynamically display only the Admin Fee Profit (Laba Jasa).
+                if (rowFisik) rowFisik.classList.add('hidden');
+                if (rowBank) rowBank.classList.add('hidden');
+                previewLaba.textContent = "+ " + rupiah(admin);
+            } else {
+                if (rowFisik) rowFisik.classList.remove('hidden');
+                if (rowBank) rowBank.classList.remove('hidden');
+                previewFisik.textContent = "+ " + rupiah(nominal + admin);
+                previewBank.textContent = "- " + rupiah(nominal);
+                previewLaba.textContent = "+ " + rupiah(admin);
+            }
         } else {
+            // TARIK TUNAI mode completely untouched
+            if (rowFisik) rowFisik.classList.remove('hidden');
+            if (rowBank) rowBank.classList.remove('hidden');
             previewFisik.textContent = "- " + rupiah(nominal);
             previewBank.textContent = "+ " + rupiah(nominal + admin);
             previewLaba.textContent = "+ " + rupiah(admin);
@@ -8413,11 +8456,14 @@ function hitungOtomatisBRILink() {
 
 function prosesTransaksiBRILink() {
     const mode = document.getElementById('inputBRILinkMode').value;
+    const sumberDana = document.getElementById('inputBRILinkSumberDana') ? document.getElementById('inputBRILinkSumberDana').value : 'Bank BRI';
     const pelanggan = document.getElementById('inputBRILinkPelanggan').value.trim() || 'UMUM';
     const rekening = document.getElementById('inputBRILinkRekening').value.trim() || '-';
     const rawNominal = document.getElementById('inputBRILinkNominal').value.replace(/\./g, '');
     const rawAdmin = document.getElementById('inputBRILinkAdmin').value.replace(/\./g, '');
     const catatan = document.getElementById('inputBRILinkCatatan').value.trim() || '';
+    const potongAdminElem = document.querySelector('input[name="brilinkPotongAdmin"]:checked');
+    const tipePotongAdmin = potongAdminElem ? potongAdminElem.value : 'dalam';
 
     const nominal = parseFloat(rawNominal) || 0;
     const admin = parseFloat(rawAdmin) || 0;
@@ -8435,41 +8481,108 @@ function prosesTransaksiBRILink() {
     let labaTrx = admin;
 
     if (mode === 'TRANSFER') {
-        // Double-entry record for TRANSFER
-        // Cash drawer += (nominal + admin), EDC/Bank -= nominal, Laba = admin
-        totalNominalHalaman = nominal + admin;
+        if (sumberDana === 'ATM Pelanggan') {
+            // ATM Pelanggan:
+            // Primary transfer amount has ZERO impact on store assets (no reduction of EDC/bank, no add/sub from physical cash drawer).
+            // Dynamic Admin Fee Routing:
+            if (tipePotongAdmin === 'dalam') {
+                // "Bayar di Dalam": Admin fee deposited into cashier-selected digital store wallet (BRI, SeaBank, GoPay, DANA)
+                const dompetFeeElem = document.getElementById('inputBRILinkDompetFee');
+                const dompetFee = dompetFeeElem ? dompetFeeElem.value : 'Bank BRI';
 
-        cashierHistory.unshift({
-            id: idTrx,
-            tanggal: strTanggal,
-            waktu: strWaktu,
-            obat: namaLayanan,
-            kasir: 'Operator BRILink',
-            item: 1,
-            total: totalNominalHalaman,
-            metode: 'Tunai', // Laci Fisik bertambah (Uang tunai diserahkan pelanggan)
-            metodeBayar: 'Tunai',
-            laba: labaTrx,
-            pelanggan: pelanggan,
-            isBRILink: true,
-            brilinkMode: 'TRANSFER',
-            brilinkNominal: nominal,
-            brilinkAdmin: admin,
-            brilinkRekening: rekening
-        });
+                if (!dompetFee) {
+                    return alert("⚠️ Silakan pilih dompet digital penampung fee admin!");
+                }
 
-        // Potong Saldo EDC/Bank sebesar nominal transfer
-        pengeluaranHistory.unshift({
-            id: 'BRILINK-BANK-' + idTrx,
-            tanggal: strTanggal,
-            waktu: strWaktu,
-            kategori: 'Biaya Toko',
-            sumberDana: 'QRIS', // Potong saldo Bank
-            nominal: nominal,
-            keterangan: `BRILink Transfer EDC Bank ke ${rekening} (${pelanggan})`
-        });
+                // Digital admin fee logged into cashierHistory with digital payment method (QRIS/wallet)
+                cashierHistory.unshift({
+                    id: idTrx,
+                    tanggal: strTanggal,
+                    waktu: strWaktu,
+                    obat: `${namaLayanan} [Fee Admin via ${dompetFee}]`,
+                    kasir: 'Operator BRILink',
+                    item: 1,
+                    total: admin,
+                    metode: 'QRIS', // Digital wallet bertambah sebesar fee admin
+                    metodeBayar: 'QRIS',
+                    laba: labaTrx,
+                    pelanggan: pelanggan,
+                    isBRILink: true,
+                    brilinkMode: 'TRANSFER',
+                    brilinkSumberDana: 'ATM Pelanggan',
+                    brilinkDompetFee: dompetFee,
+                    brilinkTipePotongAdmin: 'dalam',
+                    brilinkNominal: nominal,
+                    brilinkAdmin: admin,
+                    brilinkRekening: rekening
+                });
+
+                // No pengeluaranHistory entry: Store assets are not reduced for transfer nominal!
+            } else {
+                // "Bayar di Luar": Admin fee payment routed directly into Physical Cash Drawer (Laci Fisik)
+                cashierHistory.unshift({
+                    id: idTrx,
+                    tanggal: strTanggal,
+                    waktu: strWaktu,
+                    obat: `${namaLayanan} [Fee Admin Tunai Laci]`,
+                    kasir: 'Operator BRILink',
+                    item: 1,
+                    total: admin,
+                    metode: 'Tunai', // Physical cash drawer bertambah sebesar fee admin
+                    metodeBayar: 'Tunai',
+                    laba: labaTrx,
+                    pelanggan: pelanggan,
+                    isBRILink: true,
+                    brilinkMode: 'TRANSFER',
+                    brilinkSumberDana: 'ATM Pelanggan',
+                    brilinkTipePotongAdmin: 'luar',
+                    brilinkNominal: nominal,
+                    brilinkAdmin: admin,
+                    brilinkRekening: rekening
+                });
+
+                // No pengeluaranHistory entry: Store assets are not reduced for transfer nominal!
+            }
+        } else {
+            // Standard TRANSFER mode (Bank BRI, SeaBank, GoPay, DANA):
+            // Double-entry record for TRANSFER
+            // Cash drawer += (nominal + admin), EDC/Bank -= nominal, Laba = admin
+            totalNominalHalaman = nominal + admin;
+
+            cashierHistory.unshift({
+                id: idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                obat: namaLayanan,
+                kasir: 'Operator BRILink',
+                item: 1,
+                total: totalNominalHalaman,
+                metode: 'Tunai', // Laci Fisik bertambah (Uang tunai diserahkan pelanggan)
+                metodeBayar: 'Tunai',
+                laba: labaTrx,
+                pelanggan: pelanggan,
+                isBRILink: true,
+                brilinkMode: 'TRANSFER',
+                brilinkSumberDana: sumberDana,
+                brilinkNominal: nominal,
+                brilinkAdmin: admin,
+                brilinkRekening: rekening
+            });
+
+            // Potong Saldo EDC/Bank sebesar nominal transfer
+            pengeluaranHistory.unshift({
+                id: 'BRILINK-BANK-' + idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                kategori: 'Biaya Toko',
+                sumberDana: 'QRIS', // Potong saldo Bank
+                nominal: nominal,
+                keterangan: `BRILink Transfer EDC Bank ke ${rekening} (${pelanggan})`
+            });
+        }
 
     } else {
+        // TARIK TUNAI mode completely untouched
         // Double-entry record for TARIK TUNAI
         // Bank EDC += (nominal + admin), Laci Fisik -= nominal, Laba = admin
         totalNominalHalaman = nominal + admin;
@@ -8515,7 +8628,12 @@ function prosesTransaksiBRILink() {
     if(!document.getElementById('layar-riwayat').classList.contains('hidden')) renderRiwayatMobile();
 
     triggerHaptic([100, 50, 100]);
-    alert(`✅ Transaksi ${mode === 'TRANSFER' ? 'Transfer' : 'Tarik Tunai'} BRILink Sukses!\n\nDouble-Entry Berhasil:\n- Fee Admin Rp ${admin.toLocaleString('id-ID')} dicatat sebagai Laba.\n- Saldo Laci & EDC/Bank telah diperbarui secara otomatis.`);
+    if (mode === 'TRANSFER' && sumberDana === 'ATM Pelanggan') {
+        const tujuanFee = tipePotongAdmin === 'dalam' ? (document.getElementById('inputBRILinkDompetFee') ? document.getElementById('inputBRILinkDompetFee').value : 'Digital') : 'Laci Fisik';
+        alert(`✅ Transaksi Transfer (ATM Pelanggan) Sukses!\n\nDouble-Entry Berhasil:\n- Nominal Transfer Rp ${nominal.toLocaleString('id-ID')} tidak mempengaruhi aset toko.\n- Fee Admin Rp ${admin.toLocaleString('id-ID')} masuk ke ${tujuanFee} dicatat sebagai Laba.`);
+    } else {
+        alert(`✅ Transaksi ${mode === 'TRANSFER' ? 'Transfer' : 'Tarik Tunai'} BRILink Sukses!\n\nDouble-Entry Berhasil:\n- Fee Admin Rp ${admin.toLocaleString('id-ID')} dicatat sebagai Laba.\n- Saldo Laci & EDC/Bank telah diperbarui secara otomatis.`);
+    }
 }
 
 // ==========================================

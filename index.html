@@ -2029,13 +2029,28 @@ tailwind.config = {
                 <input type="hidden" id="inputBRILinkMode" value="TRANSFER">
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana Pelanggan</label>
-                    <select id="inputBRILinkSumberDana" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana</label>
+                    <select id="inputBRILinkSumberDana" onchange="onGantiSumberDanaBRILink()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                        <option value="Bank BRI">Bank BRI</option>
+                        <option value="SeaBank">SeaBank</option>
+                        <option value="GoPay">GoPay</option>
+                        <option value="DANA">DANA</option>
+                        <option value="ATM Pelanggan">ATM Pelanggan</option>
+                    </select>
+                </div>
+
+                <!-- Pilihan Dompet Penampung Fee Admin jika ATM Pelanggan + Bayar di Dalam -->
+                <div id="wadahDompetFeeBRILink" class="hidden">
+                    <label class="block text-[10px] font-black text-blue-700 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-wallet text-blue-600"></i> Dompet Penampung Fee Admin <span class="text-red-500">*</span>
+                    </label>
+                    <select id="inputBRILinkDompetFee" onchange="hitungOtomatisBRILink()" class="w-full bg-blue-50/60 border border-blue-200 rounded-xl px-4 py-3 text-sm font-bold text-blue-900 focus:outline-none focus:border-blue-500 shadow-inner">
                         <option value="Bank BRI">Bank BRI</option>
                         <option value="SeaBank">SeaBank</option>
                         <option value="GoPay">GoPay</option>
                         <option value="DANA">DANA</option>
                     </select>
+                    <p class="text-[9px] text-blue-600/80 font-medium mt-1 pl-1">Pilih dompet toko penerima transfer fee admin dari pelanggan.</p>
                 </div>
 
                 <div>
@@ -2069,13 +2084,13 @@ tailwind.config = {
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Tipe Potongan Admin</label>
                     <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
                         <label class="cursor-pointer">
-                            <input type="radio" name="brilinkPotongAdmin" value="dalam" class="peer sr-only" checked>
+                            <input type="radio" name="brilinkPotongAdmin" value="dalam" onchange="onGantiTipePotonganAdminBRILink()" class="peer sr-only" checked>
                             <div class="py-2.5 px-3 rounded-lg text-center font-bold text-xs text-slate-600 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:shadow-sm transition-all flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-scissors text-xs"></i> Bayar di Dalam
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="brilinkPotongAdmin" value="luar" class="peer sr-only">
+                            <input type="radio" name="brilinkPotongAdmin" value="luar" onchange="onGantiTipePotonganAdminBRILink()" class="peer sr-only">
                             <div class="py-2.5 px-3 rounded-lg text-center font-bold text-xs text-slate-600 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:shadow-sm transition-all flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-plus-minus text-xs"></i> Potong / Bayar di Luar
                             </div>
@@ -2089,15 +2104,15 @@ tailwind.config = {
                         <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest"><i class="fa-solid fa-scale-balanced mr-1"></i> Preview Double-Entry System</span>
                         <span class="text-[9px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded font-bold uppercase" id="previewBRILinkLabel">Transfer</span>
                     </div>
-                    <div class="flex justify-between items-center text-[11px]">
+                    <div class="flex justify-between items-center text-[11px]" id="previewRowBRILinkFisik">
                         <span class="text-slate-300">💵 Uang Laci Fisik:</span>
                         <span class="font-black text-emerald-400" id="previewBRILinkFisik">+ Rp 0</span>
                     </div>
-                    <div class="flex justify-between items-center text-[11px]">
+                    <div class="flex justify-between items-center text-[11px]" id="previewRowBRILinkBank">
                         <span class="text-slate-300">💳 Saldo EDC / Bank:</span>
                         <span class="font-black text-rose-400" id="previewBRILinkBank">- Rp 0</span>
                     </div>
-                    <div class="flex justify-between items-center text-[11px] pt-1 border-t border-slate-800/80">
+                    <div class="flex justify-between items-center text-[11px] pt-1 border-t border-slate-800/80" id="previewRowBRILinkLaba">
                         <span class="text-amber-300 font-bold">💰 Pendapatan Fee Admin (Laba):</span>
                         <span class="font-black text-amber-400" id="previewBRILinkLaba">+ Rp 0</span>
                     </div>
