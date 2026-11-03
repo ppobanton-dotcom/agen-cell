@@ -2123,15 +2123,27 @@ tailwind.config = {
             </div>
 
             <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+                <!-- 1. Modern Category Grid (Replace Dropdown) -->
                 <div>
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Kategori Produk Digital</label>
-                    <select id="inputPPOBKategori" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
-                        <option value="Pulsa Reguler">Pulsa Reguler (Telkomsel, Indosat, XL, Tri, Smartfren)</option>
-                        <option value="Paket Data">Paket Data / Kuota Internet</option>
-                        <option value="Token PLN">Token Listrik PLN</option>
-                        <option value="Tagihan PPOB">Tagihan PPOB (PLN Pasca, PDAM, BPJS)</option>
-                        <option value="Voucher Game">Voucher Game & E-Wallet (Dana, OVO, Gopay, ShopeePay)</option>
-                    </select>
+                    <input type="hidden" id="inputPPOBKategori" value="Pulsa">
+                    <div id="ppobCategoryChips" class="flex flex-wrap sm:grid sm:grid-cols-5 gap-2">
+                        <button type="button" onclick="pilihKategoriPPOB('Pulsa', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/20 active:scale-95" data-cat="Pulsa">
+                            <span>📱</span> <span>Pulsa</span>
+                        </button>
+                        <button type="button" onclick="pilihKategoriPPOB('Paket Data', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Paket Data">
+                            <span>🌐</span> <span>Paket Data</span>
+                        </button>
+                        <button type="button" onclick="pilihKategoriPPOB('Token PLN', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Token PLN">
+                            <span>⚡</span> <span>PLN</span>
+                        </button>
+                        <button type="button" onclick="pilihKategoriPPOB('E-Wallet', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="E-Wallet">
+                            <span>💳</span> <span>E-Wallet</span>
+                        </button>
+                        <button type="button" onclick="pilihKategoriPPOB('Lainnya', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Lainnya">
+                            <span>📦</span> <span>Lainnya</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div>
@@ -2139,37 +2151,67 @@ tailwind.config = {
                     <input type="text" id="inputPPOBTarget" placeholder="Cth: 085849337329 / 1400xxxx" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
                 </div>
 
+                <!-- 2. Hybrid Product / Nominal Input with Quick-Select Chips -->
                 <div>
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Produk / Nominal</label>
-                    <input type="text" id="inputPPOBNamaProduk" placeholder="Cth: Pulsa Telkomsel 50rb / Token PLN 100rb" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Modal HPP (Rp)</label>
-                        <input type="text" inputmode="numeric" id="inputPPOBModal" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Harga Jual (Rp)</label>
-                        <input type="text" inputmode="numeric" id="inputPPOBJual" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-black text-amber-700 focus:outline-none focus:border-amber-500 shadow-inner">
+                    <input type="text" id="inputPPOBNamaProduk" placeholder="Cth: Pulsa Telkomsel 50rb / Token PLN 100rb" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner mb-2">
+                    <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-0.5">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider shrink-0 mr-1"><i class="fa-solid fa-bolt text-amber-500"></i> Cepat:</span>
+                        <button type="button" onclick="pilihNominalCepatPPOB('5rb', '5.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">5rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('10rb', '10.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">10rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('20rb', '20.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">20rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('50rb', '50.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">50rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('100rb', '100.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">100rb</button>
                     </div>
                 </div>
 
+                <!-- 3. Smart Profit Calculator (Live Feedback) -->
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Metode Pembayaran Pelanggan</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="ppobMetode" value="Tunai" class="peer sr-only" checked>
-                            <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-600 shadow-sm">Tunai</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Modal HPP (Rp)</label>
+                            <input type="text" inputmode="numeric" id="inputPPOBModal" oninput="formatAngkaRibuan(this); updateLiveLabaPPOB();" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Harga Jual (Rp)</label>
+                            <input type="text" inputmode="numeric" id="inputPPOBJual" oninput="formatAngkaRibuan(this); updateLiveLabaPPOB();" placeholder="Rp 0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-black text-amber-700 focus:outline-none focus:border-amber-500 shadow-inner">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-1.5 px-1">
+                        <span class="text-[10px] font-bold text-slate-500">Estimasi Keuntungan:</span>
+                        <span id="labaPPOBPreview" class="text-sm text-green-600 font-bold">Laba: Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- 4. Payment Method & Octopus Integration (QRIS/Bank Dynamic Recipient Wallet) -->
+                <div class="space-y-2.5">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Metode Pembayaran Pelanggan</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="ppobMetode" value="Tunai" class="peer sr-only" checked onchange="togglePPOBMetodeBayar()">
+                                <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-600 shadow-sm">Tunai</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="ppobMetode" value="QRIS" class="peer sr-only" onchange="togglePPOBMetodeBayar()">
+                                <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-700 shadow-sm">QRIS / Bank</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="ppobMetode" value="Debt" class="peer sr-only" onchange="togglePPOBMetodeBayar()">
+                                <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-600 shadow-sm">Kasbon</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Recipient Wallet Dropdown for QRIS/Bank -->
+                    <div id="wadahDompetPenerimaPPOB" class="hidden bg-blue-50/60 border border-blue-200/80 rounded-2xl p-3 transition-all animate-fade-in">
+                        <label class="block text-[10px] font-black text-blue-900 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-wallet text-blue-600 mr-1"></i> Pilih Dompet Penerima</span>
+                            <span class="text-[9px] text-blue-600 font-semibold lowercase">masuk kas digital</span>
                         </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="ppobMetode" value="QRIS" class="peer sr-only">
-                            <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-700 shadow-sm">QRIS / Bank</div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="ppobMetode" value="Debt" class="peer sr-only">
-                            <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-600 shadow-sm">Kasbon</div>
-                        </label>
+                        <select id="selectPPOBDompetPenerima" class="w-full bg-white border border-blue-300 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
+                            <!-- Populated dynamically via JS -->
+                        </select>
                     </div>
                 </div>
             </div>

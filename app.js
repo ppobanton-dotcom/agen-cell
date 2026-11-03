@@ -4827,6 +4827,7 @@ function simpanSetelanEDCAccount(val) {
 function reRenderAppWideWallets() {
     renderSaldoDashboard();
     renderDropdownsBRILink();
+    renderDropdownDompetPPOB();
 }
 
 function bukaModalSetelanMobile() {
@@ -9623,21 +9624,137 @@ function prosesTransaksiBRILink() {
 // ==========================================
 // MESIN MODUL PULSA & PPOB (PRODUK DIGITAL)
 // ==========================================
+function pilihKategoriPPOB(kategori, btnEl) {
+    const inputKat = document.getElementById('inputPPOBKategori');
+    if (inputKat) inputKat.value = kategori;
+
+    const chips = document.querySelectorAll('.ppob-cat-chip');
+    chips.forEach(chip => {
+        chip.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'shadow-sm', 'shadow-blue-500/20');
+        chip.classList.add('bg-slate-50', 'text-slate-700', 'border-slate-200');
+    });
+
+    if (btnEl) {
+        btnEl.classList.remove('bg-slate-50', 'text-slate-700', 'border-slate-200');
+        btnEl.classList.add('bg-blue-600', 'text-white', 'border-blue-600', 'shadow-sm', 'shadow-blue-500/20');
+    }
+}
+
+function pilihNominalCepatPPOB(labelNominal, nominalFormat) {
+    const inputNama = document.getElementById('inputPPOBNamaProduk');
+    if (!inputNama) return;
+
+    let currentVal = inputNama.value.trim();
+    if (!currentVal) {
+        const inputKat = document.getElementById('inputPPOBKategori');
+        const kat = inputKat ? inputKat.value : 'Pulsa';
+        inputNama.value = `${kat} ${labelNominal}`;
+    } else {
+        // If current text ends with a previous quick chip like 5rb, 10rb, 20rb, 50rb, 100rb, replace it
+        const regexUjung = /\b(5rb|10rb|20rb|50rb|100rb|\d+k)\b$/i;
+        if (regexUjung.test(currentVal)) {
+            inputNama.value = currentVal.replace(regexUjung, labelNominal);
+        } else {
+            inputNama.value = `${currentVal} ${labelNominal}`;
+        }
+    }
+    inputNama.focus();
+}
+
+function updateLiveLabaPPOB() {
+    const rawModal = (document.getElementById('inputPPOBModal')?.value || '').replace(/\./g, '');
+    const rawJual = (document.getElementById('inputPPOBJual')?.value || '').replace(/\./g, '');
+
+    const modal = parseFloat(rawModal) || 0;
+    const jual = parseFloat(rawJual) || 0;
+    const laba = Math.max(0, jual - modal);
+
+    const spanPreview = document.getElementById('labaPPOBPreview');
+    if (spanPreview) {
+        spanPreview.textContent = `Laba: ${rupiah(laba)}`;
+        if (laba > 0) {
+            spanPreview.className = "text-sm text-green-600 font-black";
+        } else if (jual > 0 && jual < modal) {
+            spanPreview.textContent = `Rugi: ${rupiah(modal - jual)}`;
+            spanPreview.className = "text-sm text-red-600 font-black";
+        } else {
+            spanPreview.className = "text-sm text-slate-500 font-bold";
+        }
+    }
+}
+
+function renderDropdownDompetPPOB() {
+    const selectPenerima = document.getElementById('selectPPOBDompetPenerima');
+    if (!selectPenerima) return;
+
+    const currentVal = selectPenerima.value;
+    const activeWallets = getActiveWallets();
+
+    // Saring dompet aktif untuk penerima QRIS (bisa semua dompet aktif toko, default Bank/E-Wallet)
+    let html = '';
+    activeWallets.forEach(w => {
+        html += `<option value="${w.name}">${w.name}</option>`;
+    });
+
+    selectPenerima.innerHTML = html;
+    if (currentVal && Array.from(selectPenerima.options).some(o => o.value === currentVal)) {
+        selectPenerima.value = currentVal;
+    } else {
+        // Cari default rekening penerima bank/qris jika ada, misal SeaBank atau Bank BRI atau DANA/GoPay
+        const preferred = activeWallets.find(w => w.name === 'Bank BRI' || w.name === 'SeaBank' || w.name === 'GoPay' || w.name === 'DANA');
+        if (preferred) {
+            selectPenerima.value = preferred.name;
+        } else if (activeWallets.length > 0) {
+            selectPenerima.value = activeWallets[0].name;
+        }
+    }
+}
+
+function togglePPOBMetodeBayar() {
+    const metode = document.querySelector('input[name="ppobMetode"]:checked')?.value || 'Tunai';
+    const container = document.getElementById('wadahDompetPenerimaPPOB');
+    if (!container) return;
+
+    if (metode === 'QRIS') {
+        renderDropdownDompetPPOB();
+        container.classList.remove('hidden');
+    } else {
+        container.classList.add('hidden');
+    }
+}
+
 function bukaModalPPOB() {
     document.getElementById('inputPPOBTarget').value = '';
     document.getElementById('inputPPOBNamaProduk').value = '';
     document.getElementById('inputPPOBModal').value = '';
     document.getElementById('inputPPOBJual').value = '';
+
+    // Reset kategori ke Pulsa
+    const inputKat = document.getElementById('inputPPOBKategori');
+    if (inputKat) inputKat.value = 'Pulsa';
+    const firstChip = document.querySelector('.ppob-cat-chip[data-cat="Pulsa"]');
+    pilihKategoriPPOB('Pulsa', firstChip);
+
+    // Reset radio payment ke Tunai
+    const radioTunai = document.querySelector('input[name="ppobMetode"][value="Tunai"]');
+    if (radioTunai) radioTunai.checked = true;
+    togglePPOBMetodeBayar();
+
+    // Reset kalkulasi laba
+    updateLiveLabaPPOB();
+
     bukaModalMobile('modalPPOB', 'panelPPOB');
 }
 
 function prosesTransaksiPPOB() {
-    const kategori = document.getElementById('inputPPOBKategori').value;
+    const inputKat = document.getElementById('inputPPOBKategori');
+    const kategori = inputKat ? inputKat.value : 'Pulsa';
     const target = document.getElementById('inputPPOBTarget').value.trim();
     const namaProduk = document.getElementById('inputPPOBNamaProduk').value.trim();
     const rawModal = document.getElementById('inputPPOBModal').value.replace(/\./g, '');
     const rawJual = document.getElementById('inputPPOBJual').value.replace(/\./g, '');
-    const metode = document.querySelector('input[name="ppobMetode"]:checked').value;
+    const radioMetode = document.querySelector('input[name="ppobMetode"]:checked');
+    const metode = radioMetode ? radioMetode.value : 'Tunai';
 
     const modal = parseFloat(rawModal) || 0;
     const jual = parseFloat(rawJual) || 0;
@@ -9646,12 +9763,30 @@ function prosesTransaksiPPOB() {
         return alert("⚠️ Mohon lengkapi No. Target, Nama Produk, dan Harga Jual!");
     }
 
+    let dompetPenerima = null;
+    if (metode === 'QRIS') {
+        const selectPenerima = document.getElementById('selectPPOBDompetPenerima');
+        dompetPenerima = selectPenerima ? selectPenerima.value : '';
+        if (!dompetPenerima) {
+            return alert("⚠️ Silakan pilih dompet penerima untuk transaksi QRIS / Bank!");
+        }
+    }
+
     const idTrx = Date.now();
     const strTanggal = getTanggalLokal();
     const strWaktu = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const laba = Math.max(0, jual - modal);
 
-    cashierHistory.unshift({
+    // Double-Entry routing for dynamic wallets
+    if (metode === 'QRIS' && dompetPenerima) {
+        const saldoLama = getWalletBalance(dompetPenerima);
+        setWalletBalance(dompetPenerima, saldoLama + jual);
+    } else if (metode === 'Tunai') {
+        const saldoLaci = getWalletBalance('Laci');
+        setWalletBalance('Laci', saldoLaci + jual);
+    }
+
+    const itemTrx = {
         id: idTrx,
         tanggal: strTanggal,
         waktu: strWaktu,
@@ -9664,6 +9799,8 @@ function prosesTransaksiPPOB() {
         laba: laba,
         pelanggan: target,
         isPPOB: true,
+        ppobKategori: kategori,
+        ppobDompetPenerima: dompetPenerima,
         detailKeranjang: [{
             dnaInduk: 'PPOB-' + kategori.replace(/\s/g, ''),
             nama: `[${kategori}] ${namaProduk}`,
@@ -9674,7 +9811,9 @@ function prosesTransaksiPPOB() {
             hppSatuan: modal,
             hppTotalModal: modal
         }]
-    });
+    };
+
+    cashierHistory.unshift(itemTrx);
 
     catatMutasiSiklus('OMZET_MASUK', jual);
     saveApotekDB('antoncell_cashierHistory', cashierHistory);
@@ -9682,8 +9821,10 @@ function prosesTransaksiPPOB() {
 
     tutupModalMobile('modalPPOB');
     renderBerandaMobile();
+    renderSaldoDashboard();
     if(!document.getElementById('layar-riwayat').classList.contains('hidden')) renderRiwayatMobile();
 
     triggerHaptic([100, 50, 100]);
-    alert(`✅ Transaksi Digital ${kategori} Sukses!\n\nProduk: ${namaProduk}\nTarget: ${target}\nHarga: ${rupiah(jual)}\nLaba: ${rupiah(laba)}`);
+    let infoPenerima = dompetPenerima ? `\nMasuk ke: ${dompetPenerima}` : (metode === 'Tunai' ? '\nMasuk ke: Laci Fisik' : '');
+    alert(`✅ Transaksi Digital ${kategori} Sukses!\n\nProduk: ${namaProduk}\nTarget: ${target}\nHarga: ${rupiah(jual)}\nLaba: ${rupiah(laba)}${infoPenerima}`);
 }
