@@ -1969,7 +1969,7 @@ tailwind.config = {
                 <input type="hidden" id="inputBRILinkMode" value="TRANSFER">
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana</label>
+                    <label id="labelBRILinkSumberDana" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana</label>
                     <select id="inputBRILinkSumberDana" onchange="onGantiSumberDanaBRILink()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
                         <option value="Bank BRI">Bank BRI</option>
                         <option value="SeaBank">SeaBank</option>
@@ -2000,8 +2000,15 @@ tailwind.config = {
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">No. Rek / Kartu / Bank</label>
+                        <label id="labelBRILinkRekening" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">No. Rek / Kartu / Bank</label>
                         <input type="text" id="inputBRILinkRekening" placeholder="BRI / BCA / Mandiri / No.Rek" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                        <select id="selectBRILinkAkunToko" onchange="hitungOtomatisBRILink()" class="hidden w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                            <option value="Bank BRI">Bank BRI</option>
+                            <option value="SeaBank">SeaBank</option>
+                            <option value="GoPay">GoPay</option>
+                            <option value="DANA">DANA</option>
+                            <option value="Buku Simpan">Buku Simpan</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nominal Transaksi (Rp)</label>
