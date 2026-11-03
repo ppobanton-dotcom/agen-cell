@@ -8715,6 +8715,8 @@ function onInputBRILinkAdmin() {
 function bukaModalBRILink() {
     document.getElementById('inputBRILinkPelanggan').value = '';
     document.getElementById('inputBRILinkRekening').value = '';
+    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+    if (selectAkunToko) selectAkunToko.value = 'Bank BRI';
     document.getElementById('inputBRILinkNominal').value = '';
     const adminInput = document.getElementById('inputBRILinkAdmin');
     if (adminInput) {
@@ -8728,7 +8730,6 @@ function bukaModalBRILink() {
     }
     const potongDalamRadio = document.querySelector('input[name="brilinkPotongAdmin"][value="dalam"]');
     if (potongDalamRadio) potongDalamRadio.checked = true;
-    onGantiSumberDanaBRILink();
     pilihModeBRILink('TRANSFER');
     bukaModalMobile('modalBRILink', 'panelBRILink');
 }
@@ -8738,15 +8739,27 @@ function pilihModeBRILink(mode) {
     const btnTransfer = document.getElementById('btnBRILinkTransfer');
     const btnTarik = document.getElementById('btnBRILinkTarik');
     const labelPreview = document.getElementById('previewBRILinkLabel');
+    const labelSumberDana = document.getElementById('labelBRILinkSumberDana');
+    const labelRekening = document.getElementById('labelBRILinkRekening');
+    const inputRekening = document.getElementById('inputBRILinkRekening');
+    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
 
     if (mode === 'TRANSFER') {
         btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-blue-700 text-white border-blue-800 shadow-sm";
         btnTarik.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
         if (labelPreview) labelPreview.textContent = "Transfer / Kirim Uang";
+        if (labelSumberDana) labelSumberDana.textContent = "Sumber Dana";
+        if (labelRekening) labelRekening.textContent = "No. Rek / Kartu / Bank";
+        if (inputRekening) inputRekening.classList.remove('hidden');
+        if (selectAkunToko) selectAkunToko.classList.add('hidden');
     } else {
         btnTarik.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-amber-600 text-white border-amber-700 shadow-sm";
         btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
         if (labelPreview) labelPreview.textContent = "Tarik Tunai";
+        if (labelSumberDana) labelSumberDana.textContent = "Sumber Dana Pelanggan";
+        if (labelRekening) labelRekening.textContent = "No. Rek/Akun Anton Cell";
+        if (inputRekening) inputRekening.classList.add('hidden');
+        if (selectAkunToko) selectAkunToko.classList.remove('hidden');
     }
     onGantiSumberDanaBRILink();
     hitungOtomatisBRILink();
@@ -8843,11 +8856,29 @@ function hitungOtomatisBRILink() {
             // TARIK TUNAI mode
             if (rowFisik) rowFisik.classList.remove('hidden');
             if (rowBank) rowBank.classList.remove('hidden');
+            const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+            const akunToko = selectAkunToko ? selectAkunToko.value : 'EDC / Bank';
             const labelBank = rowBank.querySelector('.text-slate-300');
-            if (labelBank) labelBank.textContent = "💳 Saldo EDC / Bank:";
-            previewFisik.textContent = "- " + rupiah(nominal);
-            previewBank.textContent = "+ " + rupiah(nominal + admin);
-            previewLaba.textContent = "+ " + rupiah(admin);
+            if (labelBank) labelBank.textContent = `💳 Saldo ${akunToko}:`;
+
+            if (tipePotongAdmin === 'luar') {
+                // Tipe "Potong / Bayar di Luar":
+                // Selected Store Account (Saldo EDC/Bank) = + N
+                // Uang Laci Fisik (Cash Drawer) = - (N - A)
+                // Laba = + A
+                const deductionLaci = nominal - admin;
+                previewFisik.textContent = "- " + rupiah(deductionLaci);
+                previewBank.textContent = "+ " + rupiah(nominal);
+                previewLaba.textContent = "+ " + rupiah(admin);
+            } else {
+                // Tipe "Bayar di Dalam":
+                // Selected Store Account (Saldo EDC/Bank) = + (N + A)
+                // Uang Laci Fisik (Cash Drawer) = - N
+                // Laba = + A
+                previewFisik.textContent = "- " + rupiah(nominal);
+                previewBank.textContent = "+ " + rupiah(nominal + admin);
+                previewLaba.textContent = "+ " + rupiah(admin);
+            }
         }
     }
 }
@@ -8857,6 +8888,8 @@ function prosesTransaksiBRILink() {
     const sumberDana = document.getElementById('inputBRILinkSumberDana') ? document.getElementById('inputBRILinkSumberDana').value : 'Bank BRI';
     const pelanggan = document.getElementById('inputBRILinkPelanggan').value.trim() || 'UMUM';
     const rekening = document.getElementById('inputBRILinkRekening').value.trim() || '-';
+    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+    const akunToko = selectAkunToko ? selectAkunToko.value : 'Bank BRI';
     const rawNominal = document.getElementById('inputBRILinkNominal').value.replace(/\./g, '');
     const rawAdmin = document.getElementById('inputBRILinkAdmin').value.replace(/\./g, '');
     const catatan = document.getElementById('inputBRILinkCatatan').value.trim() || '';
@@ -8872,7 +8905,7 @@ function prosesTransaksiBRILink() {
     const strTanggal = getTanggalLokal();
     const strWaktu = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-    let namaLayanan = mode === 'TRANSFER' ? `BRILink Transfer: ${rekening}` : `BRILink Tarik Tunai: ${rekening}`;
+    let namaLayanan = mode === 'TRANSFER' ? `BRILink Transfer: ${rekening}` : `BRILink Tarik Tunai: ${akunToko}`;
     if (catatan) namaLayanan += ` (${catatan})`;
 
     let totalNominalHalaman = 0;
@@ -9052,40 +9085,105 @@ function prosesTransaksiBRILink() {
         addLabaBRILink(admin);
 
     } else {
-        // TARIK TUNAI mode completely untouched
-        // Double-entry record for TARIK TUNAI
-        // Bank EDC += (nominal + admin), Laci Fisik -= nominal, Laba = admin
-        totalNominalHalaman = nominal + admin;
+        // DOUBLE-ENTRY LOGIC FOR TARIK TUNAI
+        const saldoLaci = getWalletBalance('Laci');
+        const saldoAkunToko = getWalletBalance(akunToko);
 
-        cashierHistory.unshift({
-            id: idTrx,
-            tanggal: strTanggal,
-            waktu: strWaktu,
-            obat: namaLayanan,
-            kasir: 'Operator BRILink',
-            item: 1,
-            total: totalNominalHalaman,
-            metode: 'QRIS', // Bank/EDC bertambah (Transferan dari pelanggan)
-            metodeBayar: 'QRIS',
-            laba: labaTrx,
-            pelanggan: pelanggan,
-            isBRILink: true,
-            brilinkMode: 'TARIK',
-            brilinkNominal: nominal,
-            brilinkAdmin: admin,
-            brilinkRekening: rekening
-        });
+        if (tipePotongAdmin === 'luar') {
+            // Tipe "Potong / Bayar di Luar":
+            // Selected Store Account (Saldo EDC/Bank) = + N
+            // Uang Laci Fisik (Cash Drawer) = - (N - A)
+            // Laba = + A
+            const uangKeluarLaci = nominal - admin;
+            if (uangKeluarLaci > saldoLaci) {
+                return alert(`Saldo Uang Laci Fisik tidak mencukupi! Dibutuhkan tunai Rp ${uangKeluarLaci.toLocaleString('id-ID')}, saldo saat ini Rp ${saldoLaci.toLocaleString('id-ID')}.`);
+            }
 
-        // Potong Uang Laci Fisik sebesar nominal uang yang ditarik/diserahkan ke pelanggan
-        pengeluaranHistory.unshift({
-            id: 'BRILINK-CASH-' + idTrx,
-            tanggal: strTanggal,
-            waktu: strWaktu,
-            kategori: 'Biaya Toko',
-            sumberDana: 'Tunai', // Potong Uang Laci Fisik
-            nominal: nominal,
-            keterangan: `BRILink Penyerahan Uang Tunai ke ${pelanggan} (${rekening})`
-        });
+            setWalletBalance(akunToko, saldoAkunToko + nominal);
+            setWalletBalance('Laci', saldoLaci - uangKeluarLaci);
+
+            totalNominalHalaman = nominal;
+
+            cashierHistory.unshift({
+                id: idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                obat: namaLayanan,
+                kasir: 'Operator BRILink',
+                item: 1,
+                total: totalNominalHalaman,
+                metode: 'QRIS', // Bank/EDC bertambah (Transferan dari pelanggan)
+                metodeBayar: 'QRIS',
+                laba: labaTrx,
+                pelanggan: pelanggan,
+                isBRILink: true,
+                brilinkMode: 'TARIK',
+                brilinkSumberDana: sumberDana,
+                brilinkAkunToko: akunToko,
+                brilinkTipePotongAdmin: 'luar',
+                brilinkNominal: nominal,
+                brilinkAdmin: admin,
+                brilinkRekening: akunToko
+            });
+
+            pengeluaranHistory.unshift({
+                id: 'BRILINK-CASH-' + idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                kategori: 'Biaya Toko',
+                sumberDana: 'Tunai', // Potong Uang Laci Fisik
+                nominal: uangKeluarLaci,
+                keterangan: `BRILink Tarik Tunai ke ${pelanggan} (${akunToko}) - Potong Di Luar`
+            });
+        } else {
+            // Tipe "Bayar di Dalam":
+            // Selected Store Account (Saldo EDC/Bank) = + (N + A)
+            // Uang Laci Fisik (Cash Drawer) = - N
+            // Laba = + A
+            if (nominal > saldoLaci) {
+                return alert(`Saldo Uang Laci Fisik tidak mencukupi! Dibutuhkan tunai Rp ${nominal.toLocaleString('id-ID')}, saldo saat ini Rp ${saldoLaci.toLocaleString('id-ID')}.`);
+            }
+
+            setWalletBalance(akunToko, saldoAkunToko + (nominal + admin));
+            setWalletBalance('Laci', saldoLaci - nominal);
+
+            totalNominalHalaman = nominal + admin;
+
+            cashierHistory.unshift({
+                id: idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                obat: namaLayanan,
+                kasir: 'Operator BRILink',
+                item: 1,
+                total: totalNominalHalaman,
+                metode: 'QRIS', // Bank/EDC bertambah (Transferan dari pelanggan)
+                metodeBayar: 'QRIS',
+                laba: labaTrx,
+                pelanggan: pelanggan,
+                isBRILink: true,
+                brilinkMode: 'TARIK',
+                brilinkSumberDana: sumberDana,
+                brilinkAkunToko: akunToko,
+                brilinkTipePotongAdmin: 'dalam',
+                brilinkNominal: nominal,
+                brilinkAdmin: admin,
+                brilinkRekening: akunToko
+            });
+
+            pengeluaranHistory.unshift({
+                id: 'BRILINK-CASH-' + idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                kategori: 'Biaya Toko',
+                sumberDana: 'Tunai', // Potong Uang Laci Fisik
+                nominal: nominal,
+                keterangan: `BRILink Tarik Tunai ke ${pelanggan} (${akunToko}) - Bayar Di Dalam`
+            });
+        }
+
+        // Accumulate isolated BRILink Profit
+        addLabaBRILink(admin);
     }
 
     catatMutasiSiklus('OMZET_MASUK', admin);
