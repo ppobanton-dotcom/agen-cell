@@ -2127,23 +2127,36 @@ tailwind.config = {
                 <div>
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Kategori Produk Digital</label>
                     <input type="hidden" id="inputPPOBKategori" value="Pulsa">
-                    <div id="ppobCategoryChips" class="flex flex-wrap sm:grid sm:grid-cols-5 gap-2">
-                        <button type="button" onclick="pilihKategoriPPOB('Pulsa', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/20 active:scale-95" data-cat="Pulsa">
+                    <div id="ppobCategoryChips" class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                        <button type="button" onclick="pilihKategoriPPOB('Pulsa', this)" class="ppob-cat-chip py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/20 active:scale-95" data-cat="Pulsa">
                             <span>📱</span> <span>Pulsa</span>
                         </button>
-                        <button type="button" onclick="pilihKategoriPPOB('Paket Data', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Paket Data">
+                        <button type="button" onclick="pilihKategoriPPOB('Paket Data', this)" class="ppob-cat-chip py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Paket Data">
                             <span>🌐</span> <span>Paket Data</span>
                         </button>
-                        <button type="button" onclick="pilihKategoriPPOB('Token PLN', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Token PLN">
+                        <button type="button" onclick="pilihKategoriPPOB('PLN', this)" class="ppob-cat-chip py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="PLN">
                             <span>⚡</span> <span>PLN</span>
                         </button>
-                        <button type="button" onclick="pilihKategoriPPOB('E-Wallet', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="E-Wallet">
-                            <span>💳</span> <span>E-Wallet</span>
+                        <button type="button" onclick="pilihKategoriPPOB('Pegadaian', this)" class="ppob-cat-chip py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Pegadaian">
+                            <span>🏛️</span> <span>Pegadaian</span>
                         </button>
-                        <button type="button" onclick="pilihKategoriPPOB('Lainnya', this)" class="ppob-cat-chip flex-1 sm:flex-none min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="Lainnya">
-                            <span>📦</span> <span>Lainnya</span>
+                        <button type="button" onclick="pilihKategoriPPOB('PDAM', this)" class="ppob-cat-chip py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="PDAM">
+                            <span>💧</span> <span>PDAM</span>
+                        </button>
+                        <button type="button" onclick="pilihKategoriPPOB('BPJS', this)" class="ppob-cat-chip py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 active:scale-95" data-cat="BPJS">
+                            <span>🏥</span> <span>BPJS</span>
                         </button>
                     </div>
+                </div>
+
+                <!-- Dynamic Sub-Category Selection (Operator / PLN Type) -->
+                <div id="wadahPPOBSubKategori" class="bg-blue-50/50 border border-blue-200/70 rounded-2xl p-3 transition-all">
+                    <label id="labelPPOBSubKategori" class="block text-[10px] font-black text-blue-900 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-blue-600"></i> Pilih Operator
+                    </label>
+                    <select id="selectPPOBSubKategori" onchange="onGantiSubKategoriPPOB()" class="w-full bg-white border border-blue-300 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
+                        <!-- Populated dynamically via JS -->
+                    </select>
                 </div>
 
                 <div>
@@ -2155,14 +2168,27 @@ tailwind.config = {
                 <div>
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Produk / Nominal</label>
                     <input type="text" id="inputPPOBNamaProduk" placeholder="Cth: Pulsa Telkomsel 50rb / Token PLN 100rb" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner mb-2">
-                    <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-0.5">
+                    <div id="wadahNominalCepatPPOB" class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-0.5">
                         <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider shrink-0 mr-1"><i class="fa-solid fa-bolt text-amber-500"></i> Cepat:</span>
-                        <button type="button" onclick="pilihNominalCepatPPOB('5rb', '5.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">5rb</button>
-                        <button type="button" onclick="pilihNominalCepatPPOB('10rb', '10.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">10rb</button>
-                        <button type="button" onclick="pilihNominalCepatPPOB('20rb', '20.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">20rb</button>
-                        <button type="button" onclick="pilihNominalCepatPPOB('50rb', '50.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">50rb</button>
-                        <button type="button" onclick="pilihNominalCepatPPOB('100rb', '100.000')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">100rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('5rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">5rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('10rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">10rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('15rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">15rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('20rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">20rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('25rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">25rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('50rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">50rb</button>
+                        <button type="button" onclick="pilihNominalCepatPPOB('100rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">100rb</button>
                     </div>
+                </div>
+
+                <!-- Vendor / Capital Source Selection ("Sumber Modal / Aplikasi") -->
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-wallet text-amber-500"></i> Sumber Modal / Aplikasi</span>
+                        <span class="text-[9px] text-amber-600 font-bold lowercase">potong saldo modal</span>
+                    </label>
+                    <select id="selectPPOBVendor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-amber-500 shadow-inner">
+                        <!-- Populated dynamically via JS -->
+                    </select>
                 </div>
 
                 <!-- 3. Smart Profit Calculator (Live Feedback) -->
@@ -2194,7 +2220,7 @@ tailwind.config = {
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="ppobMetode" value="QRIS" class="peer sr-only" onchange="togglePPOBMetodeBayar()">
-                                <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-700 shadow-sm">QRIS / Bank</div>
+                                <div class="bg-white border border-slate-200 rounded-xl py-2.5 px-2 text-center text-xs font-bold text-slate-700 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-700 shadow-sm">QRIS / Rekening</div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="ppobMetode" value="Debt" class="peer sr-only" onchange="togglePPOBMetodeBayar()">
@@ -2203,15 +2229,23 @@ tailwind.config = {
                         </div>
                     </div>
 
-                    <!-- Dynamic Recipient Wallet Dropdown for QRIS/Bank -->
+                    <!-- Dynamic Recipient Wallet Dropdown for QRIS/Rekening -->
                     <div id="wadahDompetPenerimaPPOB" class="hidden bg-blue-50/60 border border-blue-200/80 rounded-2xl p-3 transition-all animate-fade-in">
                         <label class="block text-[10px] font-black text-blue-900 mb-1.5 uppercase tracking-wider flex items-center justify-between">
-                            <span><i class="fa-solid fa-wallet text-blue-600 mr-1"></i> Pilih Dompet Penerima</span>
+                            <span><i class="fa-solid fa-wallet text-blue-600 mr-1"></i> Pilih Rekening / Dompet Penerima</span>
                             <span class="text-[9px] text-blue-600 font-semibold lowercase">masuk kas digital</span>
                         </label>
                         <select id="selectPPOBDompetPenerima" class="w-full bg-white border border-blue-300 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
                             <!-- Populated dynamically via JS -->
                         </select>
+                    </div>
+
+                    <!-- Optional Kasbon Customer Field if Kasbon selected and user wants custom customer name (defaults to Target if empty) -->
+                    <div id="wadahKasbonPPOB" class="hidden bg-red-50/60 border border-red-200/80 rounded-2xl p-3 transition-all animate-fade-in space-y-2">
+                        <label class="block text-[10px] font-black text-red-900 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-pen text-red-600"></i> Nama Pelanggan Kasbon (Opsional)
+                        </label>
+                        <input type="text" id="inputPPOBKasbonNama" placeholder="Nama Pelanggan (Default: No. Target)" class="w-full bg-white border border-red-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-red-400 shadow-sm">
                     </div>
                 </div>
             </div>
