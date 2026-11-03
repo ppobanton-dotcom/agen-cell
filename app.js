@@ -4478,6 +4478,182 @@ function prosesTransferMasalMobile() {
 // ==========================================
 // 15. MESIN SETELAN HUB (PROFIL & PENGATURAN)
 // ==========================================
+// ==========================================
+// MODUL SKEMA FEE ADMIN (CRUD & AUTO-FILL)
+// ==========================================
+const KEY_SKEMA_ADMIN = 'antoncell_skema_admin';
+
+function getDefaultSkemaAdmin() {
+    return [
+        { id: 1, min: 1, max: 1000000, fee: 5000 },
+        { id: 2, min: 1000001, max: 5000000, fee: 10000 },
+        { id: 3, min: 5000001, max: null, fee: 15000 }
+    ];
+}
+
+function getSkemaAdmin() {
+    try {
+        const raw = localStorage.getItem(KEY_SKEMA_ADMIN);
+        if (!raw) {
+            const defaults = getDefaultSkemaAdmin();
+            localStorage.setItem(KEY_SKEMA_ADMIN, JSON.stringify(defaults));
+            return defaults;
+        }
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            const defaults = getDefaultSkemaAdmin();
+            localStorage.setItem(KEY_SKEMA_ADMIN, JSON.stringify(defaults));
+            return defaults;
+        }
+        return parsed;
+    } catch (e) {
+        const defaults = getDefaultSkemaAdmin();
+        localStorage.setItem(KEY_SKEMA_ADMIN, JSON.stringify(defaults));
+        return defaults;
+    }
+}
+
+function saveSkemaAdmin(skemaList) {
+    localStorage.setItem(KEY_SKEMA_ADMIN, JSON.stringify(skemaList));
+}
+
+function renderTabelSkemaAdmin() {
+    const list = getSkemaAdmin();
+    // Sort tiers by min ascending
+    list.sort((a, b) => (Number(a.min) || 0) - (Number(b.min) || 0));
+
+    const buildRowsHtml = () => {
+        if (!list || list.length === 0) {
+            return `<tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold">Belum ada skema fee admin</td></tr>`;
+        }
+        return list.map(item => {
+            let labelRentang = '';
+            const minFormatted = 'Rp ' + Number(item.min).toLocaleString('id-ID');
+            if (item.max === null || item.max === undefined || item.max === '' || Number(item.max) === 0 || !isFinite(Number(item.max))) {
+                labelRentang = `> ${minFormatted}`;
+            } else {
+                const maxFormatted = 'Rp ' + Number(item.max).toLocaleString('id-ID');
+                labelRentang = `${minFormatted} - ${maxFormatted}`;
+            }
+            const feeFormatted = 'Rp ' + (Number(item.fee) || 0).toLocaleString('id-ID');
+
+            return `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-2.5 font-bold">${labelRentang}</td>
+                    <td class="p-2.5 font-black text-amber-600">${feeFormatted}</td>
+                    <td class="p-2.5 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button type="button" onclick="editSkemaFeeAdmin(${item.id})" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 flex items-center gap-1 text-[10px] font-bold border border-amber-200 active:scale-95 transition-all"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button type="button" onclick="hapusSkemaFeeAdmin(${item.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-1 text-[10px] font-bold border border-red-200 active:scale-95 transition-all"><i class="fa-solid fa-trash"></i> Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    };
+
+    const tbodyHub = document.getElementById('tabelSkemaFeeAdminBodyHub');
+    if (tbodyHub) tbodyHub.innerHTML = buildRowsHtml();
+
+    const tbodyBeranda = document.getElementById('tabelSkemaFeeAdminBody');
+    if (tbodyBeranda) tbodyBeranda.innerHTML = buildRowsHtml();
+}
+
+function bukaModalFormFeeAdmin(editId = null) {
+    const inputId = document.getElementById('inputFeeAdminId');
+    const inputMin = document.getElementById('inputFeeAdminMin');
+    const inputMax = document.getElementById('inputFeeAdminMax');
+    const inputFee = document.getElementById('inputFeeAdminNominal');
+    const title = document.getElementById('judulModalFormFeeAdmin');
+
+    if (!inputId || !inputMin || !inputMax || !inputFee) return;
+
+    if (editId) {
+        const list = getSkemaAdmin();
+        const item = list.find(x => x.id === editId);
+        if (!item) return;
+
+        inputId.value = item.id;
+        inputMin.value = Number(item.min).toLocaleString('id-ID');
+        inputMax.value = (item.max !== null && item.max !== undefined && item.max !== '' && isFinite(Number(item.max))) ? Number(item.max).toLocaleString('id-ID') : '';
+        inputFee.value = Number(item.fee).toLocaleString('id-ID');
+        if (title) title.innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-300"></i> Edit Skema Fee';
+    } else {
+        inputId.value = '';
+        inputMin.value = '';
+        inputMax.value = '';
+        inputFee.value = '';
+        if (title) title.innerHTML = '<i class="fa-solid fa-tags text-amber-300"></i> Tambah Skema Fee';
+    }
+
+    bukaModalMobile('modalFormFeeAdmin', 'panelFormFeeAdmin');
+}
+
+function editSkemaFeeAdmin(id) {
+    bukaModalFormFeeAdmin(id);
+}
+
+async function hapusSkemaFeeAdmin(id) {
+    let konfirmasi = true;
+    if (typeof customConfirm === 'function') {
+        konfirmasi = await customConfirm("Hapus skema fee admin ini?");
+    } else {
+        konfirmasi = confirm("Hapus skema fee admin ini?");
+    }
+    if (!konfirmasi) return;
+
+    let list = getSkemaAdmin();
+    list = list.filter(item => item.id !== id);
+    saveSkemaAdmin(list);
+    renderTabelSkemaAdmin();
+    triggerHaptic([30]);
+}
+
+function simpanSkemaFeeAdmin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+
+    const inputId = document.getElementById('inputFeeAdminId');
+    const inputMin = document.getElementById('inputFeeAdminMin');
+    const inputMax = document.getElementById('inputFeeAdminMax');
+    const inputFee = document.getElementById('inputFeeAdminNominal');
+
+    const rawMin = inputMin ? inputMin.value.replace(/\./g, '').trim() : '';
+    const rawMax = inputMax ? inputMax.value.replace(/\./g, '').trim() : '';
+    const rawFee = inputFee ? inputFee.value.replace(/\./g, '').trim() : '';
+
+    const minVal = parseFloat(rawMin);
+    const feeVal = parseFloat(rawFee);
+    const maxVal = rawMax === '' ? null : parseFloat(rawMax);
+
+    if (isNaN(minVal) || minVal < 0) {
+        return alert("⚠️ Nominal Min Transaksi harus berupa angka positif!");
+    }
+    if (maxVal !== null && (isNaN(maxVal) || maxVal < minVal)) {
+        return alert("⚠️ Nominal Max Transaksi harus lebih besar dari Nominal Min!");
+    }
+    if (isNaN(feeVal) || feeVal < 0) {
+        return alert("⚠️ Biaya Fee Admin harus berupa angka valid!");
+    }
+
+    let list = getSkemaAdmin();
+    const idVal = inputId && inputId.value ? parseInt(inputId.value, 10) : null;
+
+    if (idVal) {
+        const idx = list.findIndex(item => item.id === idVal);
+        if (idx !== -1) {
+            list[idx] = { id: idVal, min: minVal, max: maxVal, fee: feeVal };
+        }
+    } else {
+        const newId = Date.now();
+        list.push({ id: newId, min: minVal, max: maxVal, fee: feeVal });
+    }
+
+    saveSkemaAdmin(list);
+    renderTabelSkemaAdmin();
+    tutupModalMobile('modalFormFeeAdmin');
+    triggerHaptic([50]);
+}
+
 function bukaModalSetelanMobile() {
     document.getElementById('setNamaMobile').value = profilApotek.nama;
     document.getElementById('setAlamatMobile').value = profilApotek.alamat || '';
@@ -4488,6 +4664,8 @@ function bukaModalSetelanMobile() {
     let iconProfil = document.getElementById('icon-setelan-profil');
     if(panelProfil) panelProfil.classList.add('hidden');
     if(iconProfil) iconProfil.style.transform = 'rotate(0deg)';
+
+    renderTabelSkemaAdmin();
 
     bukaModalMobile('modalSetelanMobile', 'panelSetelanMobile');
 }
@@ -5558,6 +5736,7 @@ function initApp() {
         }
     } catch(e) {}
     renderBerandaMobile();
+    renderTabelSkemaAdmin();
 }
 
 // ==========================================
@@ -8476,11 +8655,73 @@ function onGantiTipePotonganAdminBRILink() {
     onGantiSumberDanaBRILink();
 }
 
+function hitungAdminBRILink(nominal) {
+    const skema = getSkemaAdmin();
+    // Prioritaskan tier yang memiliki batas atas (bounded) spesifik sebelum tier terbuka (> max)
+    const matchingTiers = skema.filter(tier => {
+        const min = Number(tier.min) || 0;
+        const max = (tier.max === null || tier.max === undefined || tier.max === '' || !isFinite(Number(tier.max))) ? Infinity : Number(tier.max);
+        return nominal >= min && nominal <= max;
+    });
+
+    if (matchingTiers.length > 0) {
+        // Jika ada beberapa match (misal tier terbuka >5.000.000 dan tier spesifik 10.000.000-20.000.000), pilih tier yang batas min-nya paling mendekati/paling spesifik (min terbesar)
+        matchingTiers.sort((a, b) => {
+            const maxA = (a.max === null || a.max === undefined || a.max === '' || !isFinite(Number(a.max))) ? Infinity : Number(a.max);
+            const maxB = (b.max === null || b.max === undefined || b.max === '' || !isFinite(Number(b.max))) ? Infinity : Number(b.max);
+            if (maxA !== maxB) {
+                // Tier yang memiliki batas atas finite didahulukan daripada Infinity
+                if (isFinite(maxA) && !isFinite(maxB)) return -1;
+                if (!isFinite(maxA) && isFinite(maxB)) return 1;
+            }
+            return (Number(b.min) || 0) - (Number(a.min) || 0);
+        });
+        return Number(matchingTiers[0].fee) || 0;
+    }
+
+    // Default fallback jika tidak ada skema yang cocok
+    if (nominal <= 1000000) return 5000;
+    if (nominal <= 5000000) return 10000;
+    return 15000;
+}
+
+function onInputBRILinkNominal() {
+    const adminInput = document.getElementById('inputBRILinkAdmin');
+    const rawNominal = document.getElementById('inputBRILinkNominal') ? document.getElementById('inputBRILinkNominal').value.replace(/\./g, '') : '0';
+    const nominal = parseFloat(rawNominal) || 0;
+
+    if (adminInput) {
+        // Ketika nominal diubah/diketik, reset manualOverride agar auto-fill mengisi fee skema
+        adminInput.dataset.manualOverride = "false";
+        if (nominal > 0) {
+            const fee = hitungAdminBRILink(nominal);
+            adminInput.value = fee.toLocaleString('id-ID');
+        } else {
+            adminInput.value = '';
+        }
+    }
+    hitungOtomatisBRILink();
+}
+
+function onInputBRILinkAdmin() {
+    const adminInput = document.getElementById('inputBRILinkAdmin');
+    if (adminInput) {
+        // Kasir mengetik manual pada biaya admin -> tandai manual override
+        adminInput.dataset.manualOverride = "true";
+    }
+    hitungOtomatisBRILink();
+}
+
 function bukaModalBRILink() {
     document.getElementById('inputBRILinkPelanggan').value = '';
     document.getElementById('inputBRILinkRekening').value = '';
     document.getElementById('inputBRILinkNominal').value = '';
-    document.getElementById('inputBRILinkAdmin').value = '';
+    const adminInput = document.getElementById('inputBRILinkAdmin');
+    if (adminInput) {
+        adminInput.value = '';
+        adminInput.dataset.manualOverride = "false";
+        adminInput.readOnly = false;
+    }
     document.getElementById('inputBRILinkCatatan').value = '';
     if (document.getElementById('inputBRILinkSumberDana')) {
         document.getElementById('inputBRILinkSumberDana').value = 'Bank BRI';
@@ -8511,12 +8752,6 @@ function pilihModeBRILink(mode) {
     hitungOtomatisBRILink();
 }
 
-function hitungAdminBRILink(nominal) {
-    if (nominal < 50000) return 3000;
-    if (nominal > 2500000 && nominal <= 5000000) return 15000;
-    return 5000; // Tier standar Rp 50rb - Rp 2.5jt
-}
-
 function hitungOtomatisBRILink() {
     const mode = document.getElementById('inputBRILinkMode') ? document.getElementById('inputBRILinkMode').value : 'TRANSFER';
     const rawNominal = document.getElementById('inputBRILinkNominal') ? document.getElementById('inputBRILinkNominal').value.replace(/\./g, '') : '0';
@@ -8533,7 +8768,11 @@ function hitungOtomatisBRILink() {
             admin = parseFloat(adminInput.value.replace(/\./g, '')) || 0;
         } else if (nominal > 0) {
             admin = hitungAdminBRILink(nominal);
-            adminInput.value = admin.toLocaleString('id-ID');
+            if (!adminInput.value || adminInput.dataset.manualOverride !== "true") {
+                adminInput.value = admin.toLocaleString('id-ID');
+            }
+        } else {
+            admin = parseFloat(adminInput.value.replace(/\./g, '')) || 0;
         }
     }
 
