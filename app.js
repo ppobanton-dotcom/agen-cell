@@ -4654,6 +4654,181 @@ function simpanSkemaFeeAdmin(e) {
     triggerHaptic([50]);
 }
 
+// ==========================================
+// MODUL MANAJEMEN DOMPET (SETTINGS CRUD)
+// ==========================================
+function renderTabelManajemenDompet() {
+    const tbody = document.getElementById('tabelManajemenDompetBodyHub');
+    if (!tbody) return;
+
+    const wallets = getWalletsConfig();
+    if (!wallets || wallets.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 font-bold">Belum ada data dompet</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = wallets.map(wallet => {
+        const balance = getWalletBalance(wallet.name);
+        const isLocked = !!wallet.isLocked;
+        const isActive = !!wallet.isActive;
+
+        const toggleHtml = isLocked ? `
+            <div class="flex items-center justify-center">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-700">
+                    <i class="fa-solid fa-lock text-[8px] mr-1"></i> WAJIB ON
+                </span>
+            </div>
+        ` : `
+            <div class="flex items-center justify-center">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" ${isActive ? 'checked' : ''} onchange="toggleStatusDompet('${wallet.id}')">
+                    <div class="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+            </div>
+        `;
+
+        const aksiHtml = isLocked ? `
+            <span class="text-[9px] text-slate-400 font-bold italic">Terkunci</span>
+        ` : `
+            <button type="button" onclick="hapusDompet('${wallet.id}')" class="text-rose-600 hover:text-rose-800 p-1 rounded hover:bg-rose-50 transition-colors" title="Hapus Dompet">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+        `;
+
+        return `
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-2.5">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid ${wallet.id === 'laci' ? 'fa-cash-register text-emerald-500' : 'fa-wallet text-corporate-500'} text-xs"></i>
+                        <span>${wallet.name}</span>
+                        ${isLocked ? '<span class="text-[8px] bg-slate-100 text-slate-500 px-1 rounded font-bold">Kunci</span>' : ''}
+                    </div>
+                    <span class="text-[9px] text-slate-400 font-mono">${wallet.balanceKey || wallet.id}</span>
+                </td>
+                <td class="p-2.5 font-black text-slate-700">
+                    ${rupiah(balance)}
+                </td>
+                <td class="p-2.5 text-center">
+                    ${toggleHtml}
+                </td>
+                <td class="p-2.5 text-center">
+                    ${aksiHtml}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function toggleStatusDompet(walletId) {
+    let list = getWalletsConfig();
+    const idx = list.findIndex(w => w.id === walletId);
+    if (idx === -1) return;
+
+    if (list[idx].isLocked) {
+        alert("⚠️ Dompet utama/Laci Fisik tidak dapat dinonaktifkan!");
+        return;
+    }
+
+    list[idx].isActive = !list[idx].isActive;
+    saveWalletsConfig(list);
+    renderTabelManajemenDompet();
+    renderDropdownSetelanEDC();
+    reRenderAppWideWallets();
+    triggerHaptic([30]);
+}
+
+async function bukaModalTambahDompet() {
+    let nama = await customPrompt("Masukkan Nama Dompet Baru (Contoh: ShopeePay, Bank Mandiri, OVO):", "");
+    if (!nama) return;
+    nama = nama.trim();
+    if (!nama) return;
+
+    let list = getWalletsConfig();
+    if (list.some(w => w.name.toLowerCase() === nama.toLowerCase())) {
+        alert("⚠️ Dompet dengan nama tersebut sudah ada!");
+        return;
+    }
+
+    const cleanId = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const uniqueId = cleanId ? cleanId : 'dompet_' + Date.now();
+
+    const camelCased = nama.split(/[\s_-]+/)
+        .map((word, i) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join('');
+    const balanceKey = 'saldo' + camelCased;
+
+    const newWallet = {
+        id: uniqueId,
+        name: nama,
+        isLocked: false,
+        isActive: true,
+        balanceKey: balanceKey
+    };
+
+    list.push(newWallet);
+    saveWalletsConfig(list);
+    renderTabelManajemenDompet();
+    renderDropdownSetelanEDC();
+    reRenderAppWideWallets();
+    triggerHaptic([50]);
+    alert(`✅ Dompet "${nama}" berhasil ditambahkan!`);
+}
+
+async function hapusDompet(walletId) {
+    let list = getWalletsConfig();
+    const target = list.find(w => w.id === walletId);
+    if (!target) return;
+
+    if (target.isLocked) {
+        alert("⚠️ Dompet utama/Laci Fisik terkunci dan tidak dapat dihapus!");
+        return;
+    }
+
+    const yakin = await customConfirm(`Apakah Anda yakin ingin menghapus dompet "${target.name}"?`);
+    if (!yakin) return;
+
+    list = list.filter(w => w.id !== walletId);
+    saveWalletsConfig(list);
+    renderTabelManajemenDompet();
+    renderDropdownSetelanEDC();
+    reRenderAppWideWallets();
+    triggerHaptic([50]);
+    alert(`✅ Dompet "${target.name}" berhasil dihapus!`);
+}
+
+function renderDropdownSetelanEDC() {
+    const select = document.getElementById('selectSetelanEDCAccount');
+    if (!select) return;
+
+    const currentEDC = getEDCAccount();
+    const activeWallets = getActiveWallets();
+
+    // Default options include "Buku Simpan" and all active wallets
+    let options = [];
+    if (!activeWallets.some(w => w.name === 'Buku Simpan')) {
+        options.push('Buku Simpan');
+    }
+    activeWallets.forEach(w => {
+        if (!options.includes(w.name)) options.push(w.name);
+    });
+
+    select.innerHTML = options.map(opt => `
+        <option value="${opt}" ${opt === currentEDC ? 'selected' : ''}>${opt}</option>
+    `).join('');
+}
+
+function simpanSetelanEDCAccount(val) {
+    if (!val) return;
+    localStorage.setItem(KEY_EDC_ACCOUNT, val);
+    triggerHaptic([40]);
+    renderDropdownsBRILink();
+}
+
+function reRenderAppWideWallets() {
+    renderSaldoDashboard();
+    renderDropdownsBRILink();
+}
+
 function bukaModalSetelanMobile() {
     document.getElementById('setNamaMobile').value = profilApotek.nama;
     document.getElementById('setAlamatMobile').value = profilApotek.alamat || '';
@@ -4666,6 +4841,8 @@ function bukaModalSetelanMobile() {
     if(iconProfil) iconProfil.style.transform = 'rotate(0deg)';
 
     renderTabelSkemaAdmin();
+    renderTabelManajemenDompet();
+    renderDropdownSetelanEDC();
 
     bukaModalMobile('modalSetelanMobile', 'panelSetelanMobile');
 }
@@ -8528,16 +8705,95 @@ document.addEventListener('pointerdown', function(e) {
 // ==========================================
 // MESIN SALDO MULTI-WALLET & BUKA SHIFT
 // ==========================================
+const KEY_WALLETS_CONFIG = 'antoncell_wallets_config';
+
+function getDefaultWalletsConfig() {
+    return [
+        { id: "laci", name: "Laci Fisik", isLocked: true, isActive: true, balanceKey: "saldoLaciFisik" },
+        { id: "bri", name: "Bank BRI", isLocked: false, isActive: true, balanceKey: "saldoBankBRI" },
+        { id: "seabank", name: "SeaBank", isLocked: false, isActive: true, balanceKey: "saldoSeaBank" },
+        { id: "gopay", name: "GoPay", isLocked: false, isActive: true, balanceKey: "saldoGoPay" },
+        { id: "dana", name: "DANA", isLocked: false, isActive: true, balanceKey: "saldoDANA" }
+    ];
+}
+
+function getWalletsConfig() {
+    try {
+        const raw = localStorage.getItem(KEY_WALLETS_CONFIG);
+        if (!raw) {
+            const defaults = getDefaultWalletsConfig();
+            localStorage.setItem(KEY_WALLETS_CONFIG, JSON.stringify(defaults));
+            return defaults;
+        }
+        let parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            const defaults = getDefaultWalletsConfig();
+            localStorage.setItem(KEY_WALLETS_CONFIG, JSON.stringify(defaults));
+            return defaults;
+        }
+        // Pastikan Laci Fisik selalu locked & active
+        parsed = parsed.map(w => {
+            if (w.id === 'laci' || w.name.toLowerCase() === 'laci' || w.name.toLowerCase() === 'laci fisik') {
+                return { ...w, id: 'laci', name: 'Laci Fisik', isLocked: true, isActive: true, balanceKey: w.balanceKey || 'saldoLaciFisik' };
+            }
+            return w;
+        });
+        return parsed;
+    } catch (e) {
+        const defaults = getDefaultWalletsConfig();
+        localStorage.setItem(KEY_WALLETS_CONFIG, JSON.stringify(defaults));
+        return defaults;
+    }
+}
+
+function saveWalletsConfig(wallets) {
+    // Ensure Laci Fisik remains locked and active
+    const sanitized = wallets.map(w => {
+        if (w.id === 'laci' || w.name.toLowerCase() === 'laci' || w.name.toLowerCase() === 'laci fisik') {
+            return { ...w, id: 'laci', name: 'Laci Fisik', isLocked: true, isActive: true, balanceKey: w.balanceKey || 'saldoLaciFisik' };
+        }
+        return w;
+    });
+    localStorage.setItem(KEY_WALLETS_CONFIG, JSON.stringify(sanitized));
+}
+
+function getActiveWallets() {
+    return getWalletsConfig().filter(w => w.isActive);
+}
+
 const WALLET_KEYS = {
     'Laci': 'antoncell_saldo_laci',
+    'Laci Fisik': 'antoncell_saldo_laci',
     'Bank BRI': 'antoncell_saldo_bri',
     'SeaBank': 'antoncell_saldo_seabank',
     'GoPay': 'antoncell_saldo_gopay',
     'DANA': 'antoncell_saldo_dana'
 };
 
-function getWalletKey(walletName) {
-    let key = WALLET_KEYS[walletName] || `antoncell_saldo_${walletName.toLowerCase().replace(/\s+/g, '_')}`;
+function getWalletKey(walletIdentifier) {
+    if (!walletIdentifier) return 'antoncell_saldo_unknown';
+    // If identifier matches an existing wallet by id, name, or balanceKey
+    const configs = getWalletsConfig();
+    const found = configs.find(w =>
+        w.id === walletIdentifier ||
+        w.name.toLowerCase() === walletIdentifier.toLowerCase() ||
+        w.balanceKey === walletIdentifier ||
+        (walletIdentifier === 'Laci' && w.id === 'laci')
+    );
+
+    let key = '';
+    if (found) {
+        if (WALLET_KEYS[found.name]) {
+            key = WALLET_KEYS[found.name];
+        } else if (WALLET_KEYS[walletIdentifier]) {
+            key = WALLET_KEYS[walletIdentifier];
+        } else {
+            key = `antoncell_${found.balanceKey || ('saldo_' + found.id)}`;
+        }
+    } else {
+        key = WALLET_KEYS[walletIdentifier] || `antoncell_saldo_${walletIdentifier.toLowerCase().replace(/\s+/g, '_')}`;
+    }
+
     if (typeof activeStoreCode !== 'undefined' && activeStoreCode) {
         return `${key}_${activeStoreCode}`;
     }
@@ -8579,61 +8835,162 @@ function addLabaBRILink(amount) {
 }
 
 function renderSaldoDashboard() {
-    const badgeLaci = document.getElementById('saldoLaciFisik');
-    const badgeBRI = document.getElementById('saldoBankBRI');
-    const badgeSeaBank = document.getElementById('saldoSeaBank');
-    const badgeGoPay = document.getElementById('saldoGoPay');
-    const badgeDANA = document.getElementById('saldoDANA');
-    const badgeLabaBRILink = document.getElementById('berandaLabaBRILink');
+    const wadah = document.getElementById('wadahSaldoSlider');
+    const activeWallets = getActiveWallets();
 
-    if (badgeLaci) badgeLaci.textContent = rupiah(getWalletBalance('Laci'));
-    if (badgeBRI) badgeBRI.textContent = rupiah(getWalletBalance('Bank BRI'));
-    if (badgeSeaBank) badgeSeaBank.textContent = rupiah(getWalletBalance('SeaBank'));
-    if (badgeGoPay) badgeGoPay.textContent = rupiah(getWalletBalance('GoPay'));
-    if (badgeDANA) badgeDANA.textContent = rupiah(getWalletBalance('DANA'));
+    const getWalletIconStyle = (wallet) => {
+        const id = wallet.id.toLowerCase();
+        const name = wallet.name.toLowerCase();
+        if (id === 'laci' || name.includes('laci')) {
+            return { icon: 'fa-cash-register', bg: 'bg-emerald-100', text: 'text-emerald-600', valText: 'text-emerald-600' };
+        } else if (id === 'bri' || name.includes('bri')) {
+            return { icon: 'fa-building-columns', bg: 'bg-blue-100', text: 'text-blue-700', valText: 'text-blue-700' };
+        } else if (id === 'seabank' || name.includes('sea')) {
+            return { icon: 'fa-water-ladder', bg: 'bg-orange-100', text: 'text-orange-600', valText: 'text-orange-600' };
+        } else if (id === 'gopay' || name.includes('gopay')) {
+            return { icon: 'fa-wallet', bg: 'bg-sky-100', text: 'text-sky-600', valText: 'text-sky-600' };
+        } else if (id === 'dana' || name.includes('dana')) {
+            return { icon: 'fa-money-bill-transfer', bg: 'bg-blue-50', text: 'text-blue-500', valText: 'text-blue-600' };
+        }
+        return { icon: 'fa-wallet', bg: 'bg-indigo-100', text: 'text-indigo-600', valText: 'text-indigo-700' };
+    };
+
+    if (wadah) {
+        wadah.innerHTML = activeWallets.map(wallet => {
+            const style = getWalletIconStyle(wallet);
+            const balance = getWalletBalance(wallet.name);
+            const badgeId = wallet.balanceKey || ('saldo_' + wallet.id);
+            const shortName = (wallet.id === 'laci' || wallet.name === 'Laci Fisik') ? 'Laci' : (wallet.name === 'Bank BRI' ? 'BRI' : wallet.name);
+
+            return `
+                <div class="flex-shrink-0 w-1/3 min-w-[110px] snap-start bg-white border border-slate-200 rounded-2xl p-2.5 flex flex-col items-center text-center shadow-sm">
+                    <div class="w-7 h-7 rounded-full ${style.bg} ${style.text} flex items-center justify-center text-xs mb-1">
+                        <i class="fa-solid ${style.icon}"></i>
+                    </div>
+                    <span class="text-[8px] font-black text-slate-500 uppercase tracking-tight truncate w-full" title="${wallet.name}">${shortName}</span>
+                    <span class="text-[9.5px] font-black ${style.valText} mt-0.5 w-full whitespace-nowrap" id="${badgeId}">${rupiah(balance)}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    const badgeLabaBRILink = document.getElementById('berandaLabaBRILink');
     if (badgeLabaBRILink) badgeLabaBRILink.textContent = rupiah(getLabaBRILink());
 }
 
 function bukaModalBukaShift() {
-    const inputLaci = document.getElementById('inputShiftLaci');
-    const inputBRI = document.getElementById('inputShiftBRI');
-    const inputSeabank = document.getElementById('inputShiftSeabank');
-    const inputGoPay = document.getElementById('inputShiftGoPay');
-    const inputDANA = document.getElementById('inputShiftDANA');
+    const wadah = document.getElementById('wadahInputBukaShiftMobile');
+    const activeWallets = getActiveWallets();
 
-    if (inputLaci) inputLaci.value = getWalletBalance('Laci') ? getWalletBalance('Laci').toLocaleString('id-ID') : '';
-    if (inputBRI) inputBRI.value = getWalletBalance('Bank BRI') ? getWalletBalance('Bank BRI').toLocaleString('id-ID') : '';
-    if (inputSeabank) inputSeabank.value = getWalletBalance('SeaBank') ? getWalletBalance('SeaBank').toLocaleString('id-ID') : '';
-    if (inputGoPay) inputGoPay.value = getWalletBalance('GoPay') ? getWalletBalance('GoPay').toLocaleString('id-ID') : '';
-    if (inputDANA) inputDANA.value = getWalletBalance('DANA') ? getWalletBalance('DANA').toLocaleString('id-ID') : '';
+    const getWalletIcon = (wallet) => {
+        const id = wallet.id.toLowerCase();
+        const name = wallet.name.toLowerCase();
+        if (id === 'laci' || name.includes('laci')) return { icon: 'fa-cash-register', color: 'text-emerald-500' };
+        if (id === 'bri' || name.includes('bri')) return { icon: 'fa-building-columns', color: 'text-blue-600' };
+        if (id === 'seabank' || name.includes('sea')) return { icon: 'fa-water-ladder', color: 'text-orange-500' };
+        if (id === 'gopay' || name.includes('gopay')) return { icon: 'fa-wallet', color: 'text-sky-500' };
+        if (id === 'dana' || name.includes('dana')) return { icon: 'fa-money-bill-transfer', color: 'text-blue-500' };
+        return { icon: 'fa-wallet', color: 'text-indigo-500' };
+    };
+
+    if (wadah) {
+        wadah.innerHTML = activeWallets.map(wallet => {
+            const iconObj = getWalletIcon(wallet);
+            const currentBal = getWalletBalance(wallet.name);
+            const valStr = currentBal ? currentBal.toLocaleString('id-ID') : '';
+            const inputId = 'inputShift_' + wallet.id;
+            const label = wallet.id === 'laci' ? 'Uang Laci' : 'Saldo ' + wallet.name;
+
+            return `
+                <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">${label}</label>
+                    <div class="relative">
+                        <i class="fa-solid ${iconObj.icon} absolute left-3.5 top-1/2 -translate-y-1/2 ${iconObj.color}"></i>
+                        <input type="text" inputmode="numeric" id="${inputId}" data-wallet-id="${wallet.id}" data-wallet-name="${wallet.name}" data-balance-key="${wallet.balanceKey}" oninput="formatAngkaRibuan(this)" placeholder="Rp 0" value="${valStr}" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
     bukaModalMobile('modalBukaShiftMobile', 'panelBukaShiftMobile');
 }
 
 function simpanBukaShiftMobile() {
-    const parseInput = (id) => {
-        const el = document.getElementById(id);
-        if (!el) return 0;
-        const clean = el.value.replace(/\./g, '').trim();
-        return parseInt(clean, 10) || 0;
-    };
+    const activeWallets = getActiveWallets();
 
-    const laci = parseInput('inputShiftLaci');
-    const bri = parseInput('inputShiftBRI');
-    const seabank = parseInput('inputShiftSeabank');
-    const gopay = parseInput('inputShiftGoPay');
-    const dana = parseInput('inputShiftDANA');
-
-    setWalletBalance('Laci', laci);
-    setWalletBalance('Bank BRI', bri);
-    setWalletBalance('SeaBank', seabank);
-    setWalletBalance('GoPay', gopay);
-    setWalletBalance('DANA', dana);
+    activeWallets.forEach(wallet => {
+        const inputId = 'inputShift_' + wallet.id;
+        const el = document.getElementById(inputId);
+        let amount = 0;
+        if (el) {
+            const clean = el.value.replace(/\./g, '').trim();
+            amount = parseInt(clean, 10) || 0;
+        }
+        setWalletBalance(wallet.name, amount);
+    });
 
     renderSaldoDashboard();
     tutupModalMobile('modalBukaShiftMobile');
     triggerHaptic([50, 50]);
     alert('✅ Saldo modal awal Buka Shift berhasil disimpan!');
+}
+
+function renderDropdownsBRILink() {
+    const activeWallets = getActiveWallets();
+    const edcAccount = getEDCAccount();
+
+    // 1. Dropdown Sumber Dana (Transfer & Tarik)
+    const selectSumberDana = document.getElementById('inputBRILinkSumberDana');
+    if (selectSumberDana) {
+        const currentVal = selectSumberDana.value;
+        let html = '';
+        activeWallets.forEach(w => {
+            html += `<option value="${w.name}">${w.name}</option>`;
+        });
+        html += `<option value="ATM Pelanggan">ATM Pelanggan</option>`;
+        selectSumberDana.innerHTML = html;
+        if (currentVal && Array.from(selectSumberDana.options).some(o => o.value === currentVal)) {
+            selectSumberDana.value = currentVal;
+        } else {
+            selectSumberDana.value = activeWallets.length > 0 ? activeWallets[0].name : 'ATM Pelanggan';
+        }
+    }
+
+    // 2. Dropdown Dompet Penampung Fee Admin (ketika Transfer ATM Pelanggan + Bayar di Dalam)
+    const selectDompetFee = document.getElementById('inputBRILinkDompetFee');
+    if (selectDompetFee) {
+        const currentVal = selectDompetFee.value;
+        let html = '';
+        activeWallets.forEach(w => {
+            html += `<option value="${w.name}">${w.name}</option>`;
+        });
+        selectDompetFee.innerHTML = html;
+        if (currentVal && Array.from(selectDompetFee.options).some(o => o.value === currentVal)) {
+            selectDompetFee.value = currentVal;
+        } else {
+            selectDompetFee.value = activeWallets.length > 0 ? activeWallets[0].name : '';
+        }
+    }
+
+    // 3. Dropdown No. Rek / Akun Anton Cell (Tarik Tunai)
+    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+    if (selectAkunToko) {
+        const currentVal = selectAkunToko.value;
+        let html = '';
+        activeWallets.forEach(w => {
+            html += `<option value="${w.name}">${w.name}</option>`;
+        });
+        if (!activeWallets.some(w => w.name === edcAccount)) {
+            html += `<option value="${edcAccount}">${edcAccount}</option>`;
+        }
+        selectAkunToko.innerHTML = html;
+        if (currentVal && Array.from(selectAkunToko.options).some(o => o.value === currentVal)) {
+            selectAkunToko.value = currentVal;
+        } else {
+            selectAkunToko.value = activeWallets.length > 0 ? activeWallets[0].name : edcAccount;
+        }
+    }
 }
 
 // ==========================================
@@ -8765,11 +9122,14 @@ function onInputBRILinkAdmin() {
 }
 
 function bukaModalBRILink() {
+    renderDropdownsBRILink();
     document.getElementById('inputBRILinkPelanggan').value = '';
     document.getElementById('inputBRILinkRekening').value = '';
     const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+    const activeWallets = getActiveWallets();
+    const defaultStoreAcc = activeWallets.some(w => w.name === 'Bank BRI') ? 'Bank BRI' : (activeWallets[0] ? activeWallets[0].name : 'Buku Simpan');
     if (selectAkunToko) {
-        selectAkunToko.value = 'Bank BRI';
+        selectAkunToko.value = defaultStoreAcc;
         selectAkunToko.disabled = false;
     }
     document.getElementById('inputBRILinkNominal').value = '';
@@ -8780,8 +9140,9 @@ function bukaModalBRILink() {
         adminInput.readOnly = false;
     }
     document.getElementById('inputBRILinkCatatan').value = '';
-    if (document.getElementById('inputBRILinkSumberDana')) {
-        document.getElementById('inputBRILinkSumberDana').value = 'Bank BRI';
+    const selectSumberDana = document.getElementById('inputBRILinkSumberDana');
+    if (selectSumberDana) {
+        selectSumberDana.value = defaultStoreAcc;
     }
     const potongDalamRadio = document.querySelector('input[name="brilinkPotongAdmin"][value="dalam"]');
     if (potongDalamRadio) potongDalamRadio.checked = true;
