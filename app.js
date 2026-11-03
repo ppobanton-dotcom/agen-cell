@@ -9625,8 +9625,10 @@ function prosesTransaksiBRILink() {
 // MESIN MODUL PULSA & PPOB (PRODUK DIGITAL)
 // ==========================================
 const PPOB_OPERATORS = [
-    'Telkomsel / By.U',
-    'Indosat / Tri',
+    'Telkomsel SimPATI',
+    'Telkomsel By.U',
+    'Indosat (IM3)',
+    'Tri',
     'Smartfren',
     'Axis',
     'XL'
@@ -9693,8 +9695,11 @@ function pilihKategoriPPOB(kategori, btnEl) {
 
 function getPPOBOperatorSingkat(namaOperatorLengkap) {
     if (!namaOperatorLengkap) return '';
+    if (namaOperatorLengkap.includes('By.U')) return 'By.U';
+    if (namaOperatorLengkap.includes('SimPATI')) return 'Telkomsel';
     if (namaOperatorLengkap.includes('Telkomsel')) return 'Telkomsel';
     if (namaOperatorLengkap.includes('Indosat')) return 'Indosat';
+    if (namaOperatorLengkap.includes('Tri')) return 'Tri';
     if (namaOperatorLengkap.includes('Smartfren')) return 'Smartfren';
     if (namaOperatorLengkap.includes('Axis')) return 'Axis';
     if (namaOperatorLengkap.includes('XL')) return 'XL';
