@@ -5709,6 +5709,10 @@ function initApp() {
         localStorage.setItem('antoncell_active_store', 'ANTON');
     }
 
+    if (!localStorage.getItem('antoncell_edc_account')) {
+        localStorage.setItem('antoncell_edc_account', 'Buku Simpan');
+    }
+
     const loginOverlay = document.getElementById('loginOverlay');
     if (loginOverlay) {
         loginOverlay.classList.add('hidden');
@@ -8635,19 +8639,67 @@ function simpanBukaShiftMobile() {
 // ==========================================
 // MESIN MODUL BRILINK & KEUANGAN (DOUBLE-ENTRY)
 // ==========================================
+const KEY_EDC_ACCOUNT = 'antoncell_edc_account';
+const DEFAULT_EDC_ACCOUNT = 'Buku Simpan';
+
+function getEDCAccount() {
+    let acc = localStorage.getItem(KEY_EDC_ACCOUNT);
+    if (!acc) {
+        acc = DEFAULT_EDC_ACCOUNT;
+        localStorage.setItem(KEY_EDC_ACCOUNT, acc);
+    }
+    return acc;
+}
+
+// Inisialisasi awal key konfigurasi EDC
+if (typeof localStorage !== 'undefined' && !localStorage.getItem(KEY_EDC_ACCOUNT)) {
+    localStorage.setItem(KEY_EDC_ACCOUNT, DEFAULT_EDC_ACCOUNT);
+}
+
 function onGantiSumberDanaBRILink() {
+    const mode = document.getElementById('inputBRILinkMode') ? document.getElementById('inputBRILinkMode').value : 'TRANSFER';
     const sumberDana = document.getElementById('inputBRILinkSumberDana') ? document.getElementById('inputBRILinkSumberDana').value : '';
     const potongAdminElem = document.querySelector('input[name="brilinkPotongAdmin"]:checked');
     const tipePotong = potongAdminElem ? potongAdminElem.value : 'dalam';
     const wadahDompetFee = document.getElementById('wadahDompetFeeBRILink');
+    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
 
-    if (wadahDompetFee) {
-        if (sumberDana === 'ATM Pelanggan' && tipePotong === 'dalam') {
-            wadahDompetFee.classList.remove('hidden');
-        } else {
+    if (mode === 'TARIK') {
+        // Mode Tarik Tunai:
+        // Dompet Penampung Fee Admin tidak pernah dibutuhkan
+        if (wadahDompetFee) {
             wadahDompetFee.classList.add('hidden');
+            wadahDompetFee.style.display = 'none';
+        }
+
+        if (sumberDana === 'ATM Pelanggan') {
+            // Otomatis arahkan ke Akun EDC Toko (Buku Simpan) & kunci dropdown
+            const edcAccount = getEDCAccount();
+            if (selectAkunToko) {
+                selectAkunToko.value = edcAccount;
+                selectAkunToko.disabled = true;
+            }
+        } else {
+            // Sumber dana lain (e.g. Bank BRI, SeaBank): kasir dapat memilih akun toko secara manual
+            if (selectAkunToko) {
+                selectAkunToko.disabled = false;
+            }
+        }
+    } else {
+        // Mode TRANSFER
+        if (wadahDompetFee) {
+            wadahDompetFee.style.display = '';
+            if (sumberDana === 'ATM Pelanggan' && tipePotong === 'dalam') {
+                wadahDompetFee.classList.remove('hidden');
+            } else {
+                wadahDompetFee.classList.add('hidden');
+            }
+        }
+        if (selectAkunToko) {
+            selectAkunToko.disabled = false;
         }
     }
+
     hitungOtomatisBRILink();
 }
 
@@ -8716,7 +8768,10 @@ function bukaModalBRILink() {
     document.getElementById('inputBRILinkPelanggan').value = '';
     document.getElementById('inputBRILinkRekening').value = '';
     const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
-    if (selectAkunToko) selectAkunToko.value = 'Bank BRI';
+    if (selectAkunToko) {
+        selectAkunToko.value = 'Bank BRI';
+        selectAkunToko.disabled = false;
+    }
     document.getElementById('inputBRILinkNominal').value = '';
     const adminInput = document.getElementById('inputBRILinkAdmin');
     if (adminInput) {
