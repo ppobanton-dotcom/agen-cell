@@ -8851,66 +8851,22 @@ function addLabaBRILink(amount) {
 }
 
 function renderSaldoDashboard() {
-    const wadah = document.getElementById('wadahSaldoSlider');
     const activeWallets = getActiveWallets();
-
-    const getWalletIconStyle = (wallet) => {
-        const id = wallet.id.toLowerCase();
-        const name = wallet.name.toLowerCase();
-        if (id === 'laci' || name.includes('laci')) {
-            return { icon: 'fa-cash-register', bg: 'bg-emerald-100', text: 'text-emerald-600', valText: 'text-emerald-600' };
-        } else if (id === 'bri' || name.includes('bri')) {
-            return { icon: 'fa-building-columns', bg: 'bg-blue-100', text: 'text-blue-700', valText: 'text-blue-700' };
-        } else if (id === 'seabank' || name.includes('sea')) {
-            return { icon: 'fa-water-ladder', bg: 'bg-orange-100', text: 'text-orange-600', valText: 'text-orange-600' };
-        } else if (id === 'gopay' || name.includes('gopay')) {
-            return { icon: 'fa-wallet', bg: 'bg-sky-100', text: 'text-sky-600', valText: 'text-sky-600' };
-        } else if (id === 'dana' || name.includes('dana')) {
-            return { icon: 'fa-money-bill-transfer', bg: 'bg-blue-50', text: 'text-blue-500', valText: 'text-blue-600' };
-        }
-        return { icon: 'fa-wallet', bg: 'bg-indigo-100', text: 'text-indigo-600', valText: 'text-indigo-700' };
-    };
 
     let totalKasFisik = 0;
     let totalDigitalMoney = 0;
 
-    if (wadah) {
-        wadah.innerHTML = activeWallets.map(wallet => {
-            const style = getWalletIconStyle(wallet);
-            const balance = getWalletBalance(wallet.name);
-            const badgeId = wallet.balanceKey || ('saldo_' + wallet.id);
-            const isLaci = (wallet.id === 'laci' || wallet.name === 'Laci Fisik' || wallet.name.toLowerCase() === 'laci');
-            const shortName = isLaci ? 'Laci' : (wallet.name === 'Bank BRI' ? 'BRI' : wallet.name);
+    activeWallets.forEach(wallet => {
+        const balance = getWalletBalance(wallet.name);
+        const isLaci = (wallet.id === 'laci' || wallet.name === 'Laci Fisik' || wallet.name.toLowerCase() === 'laci');
+        if (isLaci) {
+            totalKasFisik += balance;
+        } else {
+            totalDigitalMoney += balance;
+        }
+    });
 
-            if (isLaci) {
-                totalKasFisik += balance;
-            } else {
-                totalDigitalMoney += balance;
-            }
-
-            return `
-                <div class="flex-shrink-0 w-1/3 min-w-[110px] snap-start bg-white border border-slate-200 rounded-2xl p-2.5 flex flex-col items-center text-center shadow-sm">
-                    <div class="w-7 h-7 rounded-full ${style.bg} ${style.text} flex items-center justify-center text-xs mb-1">
-                        <i class="fa-solid ${style.icon}"></i>
-                    </div>
-                    <span class="text-[8px] font-black text-slate-500 uppercase tracking-tight truncate w-full" title="${wallet.name}">${shortName}</span>
-                    <span class="text-[9.5px] font-black ${style.valText} mt-0.5 w-full whitespace-nowrap" id="${badgeId}">${rupiah(balance)}</span>
-                </div>
-            `;
-        }).join('');
-    } else {
-        activeWallets.forEach(wallet => {
-            const balance = getWalletBalance(wallet.name);
-            const isLaci = (wallet.id === 'laci' || wallet.name === 'Laci Fisik' || wallet.name.toLowerCase() === 'laci');
-            if (isLaci) {
-                totalKasFisik += balance;
-            } else {
-                totalDigitalMoney += balance;
-            }
-        });
-    }
-
-    // Update Cash & Digital Liquidity Accumulation Bar
+    // Update 3-Card Summary Grid
     const grandTotalLiquidity = totalKasFisik + totalDigitalMoney;
     const badgeKasFisik = document.getElementById('totalKasFisik');
     if (badgeKasFisik) badgeKasFisik.textContent = rupiah(totalKasFisik);
@@ -8921,6 +8877,227 @@ function renderSaldoDashboard() {
 
     const badgeLabaBRILink = document.getElementById('berandaLabaBRILink');
     if (badgeLabaBRILink) badgeLabaBRILink.textContent = rupiah(getLabaBRILink());
+}
+
+// State for digital wallets modal unlocked states: { [walletId]: boolean }
+let dompetDigitalUnlockState = {};
+
+function getWalletIconConfig(wallet) {
+    const id = (wallet.id || '').toLowerCase();
+    const name = (wallet.name || '').toLowerCase();
+    if (id === 'laci' || name.includes('laci')) {
+        return { icon: 'fa-cash-register', color: 'text-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-600' };
+    } else if (id === 'bri' || name.includes('bri')) {
+        return { icon: 'fa-building-columns', color: 'text-blue-600', bg: 'bg-blue-50', text: 'text-blue-700' };
+    } else if (id === 'seabank' || name.includes('sea')) {
+        return { icon: 'fa-water-ladder', color: 'text-orange-500', bg: 'bg-orange-50', text: 'text-orange-600' };
+    } else if (id === 'gopay' || name.includes('gopay')) {
+        return { icon: 'fa-wallet', color: 'text-sky-500', bg: 'bg-sky-50', text: 'text-sky-600' };
+    } else if (id === 'dana' || name.includes('dana')) {
+        return { icon: 'fa-money-bill-transfer', color: 'text-blue-500', bg: 'bg-blue-50', text: 'text-blue-600' };
+    }
+    return { icon: 'fa-wallet', color: 'text-indigo-500', bg: 'bg-indigo-50', text: 'text-indigo-600' };
+}
+
+function bukaModalDompetDigital() {
+    dompetDigitalUnlockState = {};
+    renderListDompetDigital();
+    renderDropdownsMutasi();
+    // Reset collapsible mutasi
+    const formMutasi = document.getElementById('formMutasiSaldo');
+    const iconChevron = document.getElementById('iconChevronMutasi');
+    if (formMutasi) formMutasi.classList.add('hidden');
+    if (iconChevron) iconChevron.classList.remove('rotate-180');
+    const inputNominal = document.getElementById('mutasiNominal');
+    if (inputNominal) inputNominal.value = '';
+
+    bukaModalMobile('modalDompetDigital', 'panelDompetDigital');
+}
+
+function renderListDompetDigital() {
+    const wadah = document.getElementById('wadahListDompetDigital');
+    if (!wadah) return;
+
+    // Filter only digital wallets (exclude Laci Fisik)
+    const activeWallets = getActiveWallets().filter(w => {
+        const id = (w.id || '').toLowerCase();
+        const name = (w.name || '').toLowerCase();
+        return id !== 'laci' && !name.includes('laci');
+    });
+
+    if (activeWallets.length === 0) {
+        wadah.innerHTML = `
+            <div class="text-center py-6 text-slate-400 text-xs">
+                Tidak ada dompet digital aktif.
+            </div>
+        `;
+        return;
+    }
+
+    wadah.innerHTML = activeWallets.map(wallet => {
+        const iconObj = getWalletIconConfig(wallet);
+        const currentBal = getWalletBalance(wallet.name);
+        const isUnlocked = !!dompetDigitalUnlockState[wallet.id];
+        const inputId = 'inputDompet_' + wallet.id;
+
+        return `
+            <div class="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl ${iconObj.bg} ${iconObj.text} flex items-center justify-center text-sm shrink-0 shadow-inner">
+                        <i class="fa-solid ${iconObj.icon}"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-tight truncate">${wallet.name}</h4>
+                        <span class="text-[9px] font-bold text-slate-400">Saldo Tersedia</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    ${isUnlocked ? `
+                        <div class="relative w-36">
+                            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">Rp</span>
+                            <input type="text" inputmode="numeric" id="${inputId}" data-wallet-name="${wallet.name}" data-wallet-id="${wallet.id}" oninput="formatAngkaRibuan(this)" value="${currentBal ? currentBal.toLocaleString('id-ID') : '0'}" class="w-full bg-slate-50 border border-corporate-500 rounded-xl pl-8 pr-2.5 py-1.5 text-xs font-black text-slate-800 focus:outline-none shadow-inner text-right">
+                        </div>
+                    ` : `
+                        <span class="text-xs font-black text-slate-800 text-right">${rupiah(currentBal)}</span>
+                    `}
+                    <button type="button" onclick="toggleLockSaldoDompet('${wallet.id}')" title="${isUnlocked ? 'Kunci Saldo' : 'Buka Kunci untuk Mengedit'}" class="w-8 h-8 rounded-xl ${isUnlocked ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} flex items-center justify-center text-xs transition-colors active:scale-95">
+                        <i class="fa-solid ${isUnlocked ? 'fa-unlock' : 'fa-lock'}"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleLockSaldoDompet(walletId) {
+    dompetDigitalUnlockState[walletId] = !dompetDigitalUnlockState[walletId];
+    renderListDompetDigital();
+    triggerHaptic([30]);
+}
+
+function simpanSaldoDompetDigital() {
+    const activeWallets = getActiveWallets().filter(w => {
+        const id = (w.id || '').toLowerCase();
+        const name = (w.name || '').toLowerCase();
+        return id !== 'laci' && !name.includes('laci');
+    });
+
+    let updatedCount = 0;
+    activeWallets.forEach(wallet => {
+        const inputId = 'inputDompet_' + wallet.id;
+        const el = document.getElementById(inputId);
+        if (el) {
+            const clean = el.value.replace(/\./g, '').trim();
+            const amount = parseInt(clean, 10) || 0;
+            setWalletBalance(wallet.name, amount);
+            updatedCount++;
+        }
+    });
+
+    // Reset unlock states after saving
+    dompetDigitalUnlockState = {};
+    renderListDompetDigital();
+    renderSaldoDashboard();
+    renderDropdownsBRILink();
+    triggerHaptic([50, 50]);
+    alert('✅ Saldo dompet digital berhasil diperbarui!');
+}
+
+function toggleFormMutasiSaldo() {
+    const form = document.getElementById('formMutasiSaldo');
+    const chevron = document.getElementById('iconChevronMutasi');
+    if (!form) return;
+
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+        renderDropdownsMutasi();
+    } else {
+        form.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+    }
+}
+
+function renderDropdownsMutasi() {
+    const selectSumber = document.getElementById('mutasiSumber');
+    const selectTujuan = document.getElementById('mutasiTujuan');
+    if (!selectSumber || !selectTujuan) return;
+
+    const activeWallets = getActiveWallets();
+    const currSumber = selectSumber.value;
+    const currTujuan = selectTujuan.value;
+
+    let optionsHtml = activeWallets.map(w => {
+        const bal = getWalletBalance(w.name);
+        return `<option value="${w.name}">${w.name} (${rupiah(bal)})</option>`;
+    }).join('');
+
+    selectSumber.innerHTML = optionsHtml;
+    selectTujuan.innerHTML = optionsHtml;
+
+    if (currSumber && activeWallets.some(w => w.name === currSumber)) {
+        selectSumber.value = currSumber;
+    } else if (activeWallets.length > 0) {
+        selectSumber.value = activeWallets[0].name;
+    }
+
+    if (currTujuan && activeWallets.some(w => w.name === currTujuan)) {
+        selectTujuan.value = currTujuan;
+    } else if (activeWallets.length > 1) {
+        selectTujuan.value = activeWallets[1].name;
+    }
+}
+
+function prosesMutasiSaldo() {
+    const selectSumber = document.getElementById('mutasiSumber');
+    const selectTujuan = document.getElementById('mutasiTujuan');
+    const inputNominal = document.getElementById('mutasiNominal');
+
+    if (!selectSumber || !selectTujuan || !inputNominal) return;
+
+    const sumber = selectSumber.value;
+    const tujuan = selectTujuan.value;
+    const rawNominal = inputNominal.value.replace(/\./g, '').trim();
+    const nominal = parseInt(rawNominal, 10) || 0;
+
+    if (!sumber || !tujuan) {
+        alert('Silakan pilih dompet sumber dan tujuan mutasi!');
+        return;
+    }
+
+    if (sumber === tujuan) {
+        alert('Dompet sumber dan tujuan tidak boleh sama!');
+        return;
+    }
+
+    if (nominal <= 0) {
+        alert('Nominal mutasi harus lebih besar dari 0!');
+        return;
+    }
+
+    const saldoSumber = getWalletBalance(sumber);
+    if (saldoSumber < nominal) {
+        alert(`Saldo ${sumber} tidak mencukupi! (Saldo: ${rupiah(saldoSumber)}, Nominal: ${rupiah(nominal)})`);
+        return;
+    }
+
+    // Double-entry transfer: deduct source, credit destination
+    const saldoTujuan = getWalletBalance(tujuan);
+    setWalletBalance(sumber, saldoSumber - nominal);
+    setWalletBalance(tujuan, saldoTujuan + nominal);
+
+    // Reset input nominal
+    inputNominal.value = '';
+
+    // Update UI components
+    renderListDompetDigital();
+    renderDropdownsMutasi();
+    renderSaldoDashboard();
+    renderDropdownsBRILink();
+
+    triggerHaptic([50, 50, 50]);
+    alert(`✅ Mutasi berhasil! ${rupiah(nominal)} dipindahkan dari ${sumber} ke ${tujuan}.`);
 }
 
 function bukaModalBukaShift() {
