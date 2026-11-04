@@ -213,43 +213,45 @@ tailwind.config = {
                 </div>
 
                 <!-- STATUS SALDO DIGITAL & CASH -->
-                <div class="px-6 mt-5">
-                    <div class="flex justify-between items-center mb-3">
+                <div class="px-6 mt-4">
+                    <div class="flex justify-between items-center mb-2.5">
                         <h3 class="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-wallet text-blue-600"></i> Status Saldo Digital
+                            <i class="fa-solid fa-wallet text-blue-600"></i> Status Saldo & Kas
                         </h3>
                         <button onclick="bukaModalBukaShift()" class="text-[9px] font-black text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 active:scale-95 uppercase tracking-wider">
                             <i class="fa-solid fa-door-open"></i> Buka Shift
                         </button>
                     </div>
 
-                    <div id="wadahSaldoSlider" class="flex flex-nowrap overflow-x-auto snap-x hide-scrollbar gap-x-3 pb-1">
-                    </div>
-
-                    <!-- CASH & DIGITAL LIQUIDITY ACCUMULATION BAR -->
-                    <div class="mt-2.5 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-slate-800/80 rounded-full py-1.5 px-3 shadow-md grid grid-cols-3 divide-x divide-slate-800 text-center text-white">
-                        <!-- Total Physical Cash (Laci Fisik) -->
-                        <div class="flex flex-col items-center justify-center px-1">
-                            <span class="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0"></span> Kas Fisik
-                            </span>
-                            <span class="text-[9.5px] font-black text-emerald-400 mt-0.5 truncate max-w-full" id="totalKasFisik">Rp 0</span>
+                    <!-- 3-CARD SUMMARY GRID -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- Card 1: Kas Fisik (Laci) -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex flex-col items-center justify-center text-center shadow-sm">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs mb-1">
+                                <i class="fa-solid fa-cash-register"></i>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Kas Fisik</span>
+                            <span class="text-xs font-black text-emerald-600 mt-0.5 truncate max-w-full" id="totalKasFisik">Rp 0</span>
                         </div>
 
-                        <!-- Total Digital Money -->
-                        <div class="flex flex-col items-center justify-center px-1">
-                            <span class="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block shrink-0"></span> Uang Digital
+                        <!-- Card 2: Uang Digital (Clickable to open Digital Wallets Modal) -->
+                        <div onclick="bukaModalDompetDigital()" role="button" tabindex="0" class="bg-white border border-blue-200/80 hover:border-blue-400 rounded-xl p-2.5 flex flex-col items-center justify-center text-center shadow-sm hover:shadow transition-all cursor-pointer active:scale-95 group relative">
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs mb-1 group-hover:scale-105 transition-transform">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <span class="text-[9px] font-bold text-blue-700 uppercase tracking-tight flex items-center gap-1">
+                                Uang Digital <i class="fa-solid fa-chevron-right text-[7px] text-blue-400 group-hover:translate-x-0.5 transition-transform"></i>
                             </span>
-                            <span class="text-[9.5px] font-black text-cyan-300 mt-0.5 truncate max-w-full" id="totalUangDigital">Rp 0</span>
+                            <span class="text-xs font-black text-blue-700 mt-0.5 truncate max-w-full" id="totalUangDigital">Rp 0</span>
                         </div>
 
-                        <!-- Grand Total -->
-                        <div class="flex flex-col items-center justify-center px-1">
-                            <span class="text-[7.5px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0"></span> Grand Total
-                            </span>
-                            <span class="text-[10px] font-black text-amber-400 mt-0.5 truncate max-w-full" id="totalLikuiditasGrand">Rp 0</span>
+                        <!-- Card 3: Grand Total -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex flex-col items-center justify-center text-center shadow-sm text-white">
+                            <div class="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center text-xs mb-1">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                            <span class="text-[9px] font-bold text-amber-300 uppercase tracking-tight">Grand Total</span>
+                            <span class="text-xs font-black text-amber-400 mt-0.5 truncate max-w-full" id="totalLikuiditasGrand">Rp 0</span>
                         </div>
                     </div>
                 </div>
@@ -2121,6 +2123,86 @@ tailwind.config = {
                 <button onclick="prosesTransaksiBRILink()" class="w-full bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-black py-4 rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wider border border-blue-500">
                     <i class="fa-solid fa-check-double text-lg"></i> Eksekusi Transaksi BRILink
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL DOMPET DIGITAL & MUTASI SALDO -->
+    <div id="modalDompetDigital" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalDompetDigital')"></div>
+        <div class="bg-white w-full max-h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:max-w-md sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelDompetDigital">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-corporate-800 to-corporate-900 px-6 py-4 flex items-center justify-between shadow-md">
+                <div>
+                    <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-wallet text-cyan-400"></i> Dompet Digital
+                    </h3>
+                    <p class="text-[9px] text-corporate-200 font-bold uppercase tracking-widest mt-0.5">Rincian Saldo Akun & Mutasi Internal</p>
+                </div>
+                <button onclick="tutupModalMobile('modalDompetDigital')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Wallets List + Mutasi Section) -->
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+                <!-- Info Banner -->
+                <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3 flex items-start gap-2.5">
+                    <i class="fa-solid fa-circle-info text-blue-600 text-sm mt-0.5 shrink-0"></i>
+                    <p class="text-[11px] text-blue-900 leading-tight">
+                        Klik ikon <i class="fa-solid fa-lock text-slate-500 text-[10px]"></i> untuk membuka kunci dan mengedit saldo langsung. Gunakan <b>Mutasi Antar Saldo</b> untuk memindahkan dana.
+                    </p>
+                </div>
+
+                <!-- Vertical List of Digital Wallets -->
+                <div id="wadahListDompetDigital" class="space-y-2.5">
+                    <!-- Populated dynamically via renderListDompetDigital() -->
+                </div>
+
+                <!-- Simpan Button for Edited Balances -->
+                <div id="wadahAksiSimpanDompet" class="pt-1">
+                    <button onclick="simpanSaldoDompetDigital()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl shadow transition-transform active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Saldo
+                    </button>
+                </div>
+
+                <!-- Section Mutasi Antar Saldo -->
+                <div class="pt-3 border-t border-slate-200">
+                    <button type="button" onclick="toggleFormMutasiSaldo()" class="w-full bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 text-blue-800 font-black py-2.5 px-4 rounded-xl transition-all flex items-center justify-between text-xs uppercase tracking-wider active:scale-98">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-right-arrow-left text-blue-600"></i> Mutasi Antar Saldo
+                        </span>
+                        <i id="iconChevronMutasi" class="fa-solid fa-chevron-down text-blue-500 transition-transform"></i>
+                    </button>
+
+                    <!-- Collapsible Form Mutasi -->
+                    <div id="formMutasiSaldo" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Dari (Sumber)</label>
+                                <select id="mutasiSumber" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Ke (Tujuan)</label>
+                                <select id="mutasiTujuan" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-600 mb-1 uppercase tracking-wider">Nominal Transfer</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">Rp</span>
+                                <input type="text" inputmode="numeric" id="mutasiNominal" oninput="formatAngkaRibuan(this)" placeholder="0" class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-black text-slate-800 focus:outline-none focus:border-corporate-500 shadow-inner">
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="prosesMutasiSaldo()" class="w-full bg-gradient-to-r from-corporate-600 to-corporate-800 hover:from-corporate-700 hover:to-corporate-900 text-white font-black py-2.5 rounded-xl shadow transition-transform active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                            <i class="fa-solid fa-circle-check"></i> Proses Mutasi
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
