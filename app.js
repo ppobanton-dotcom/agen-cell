@@ -10334,3 +10334,392 @@ function prosesTransaksiPPOB() {
 
     alert(`✅ Transaksi Digital ${kategori} Sukses!\n\nProduk: ${namaProduk}\nTarget: ${target}\nVendor: ${vendorWallet} (-${rupiah(modal)})\nHarga: ${rupiah(jual)}\nLaba Bersih: ${rupiah(laba)}${infoRouting}`);
 }
+
+// ==========================================
+// 15. MODAL DETAIL RINCIAN LABA KATEGORI
+// (BRILink, Pulsa/PPOB, Retail Aksesoris)
+// ==========================================
+
+function bukaModalLabaBRILink() {
+    renderLabaBRILink();
+    bukaModalMobile('modalLabaBRILink', 'panelLabaBRILink');
+}
+
+function renderLabaBRILink() {
+    const wadah = document.getElementById('daftarLabaBRILink');
+    const badgeCount = document.getElementById('totalCountLabaBRILink');
+    const badgeTotal = document.getElementById('totalNominalLabaBRILink');
+    if (!wadah) return;
+
+    // Filter: Show transactions where service is 'Transfer', 'Tarik Tunai', or 'Top Up E-Wallet'
+    // In Anton Cell cashierHistory: isBRILink === true, or service explicitly indicates BRILink / Transfer / Tarik Tunai / Top Up
+    const listTrx = cashierHistory.filter(t => {
+        if (!t) return false;
+        if (t.isBRILink) return true;
+        const obatStr = (t.obat || '').toLowerCase();
+        return obatStr.includes('brilink') || obatStr.includes('transfer') || obatStr.includes('tarik tunai') || obatStr.includes('top up') || obatStr.includes('topup');
+    });
+
+    let totalLaba = 0;
+    let countActive = 0;
+
+    listTrx.forEach(t => {
+        if (!t.isCancelled) {
+            totalLaba += (t.laba !== undefined ? (t.laba || 0) : (t.brilinkAdmin || 0));
+            countActive++;
+        }
+    });
+
+    if (badgeCount) badgeCount.textContent = `${countActive} Transaksi${listTrx.length > countActive ? ` (${listTrx.length - countActive} Batal)` : ''}`;
+    if (badgeTotal) badgeTotal.textContent = rupiah(totalLaba);
+
+    if (listTrx.length === 0) {
+        wadah.innerHTML = `
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
+                <i class="fa-solid fa-building-columns text-4xl text-slate-300 mb-3 block"></i>
+                <p class="font-bold text-slate-600 text-sm">Belum ada riwayat transaksi BRILink.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Transaksi Transfer, Tarik Tunai, dan Top Up E-Wallet akan tampil di sini.</p>
+            </div>`;
+        return;
+    }
+
+    wadah.innerHTML = listTrx.map(t => {
+        const isCancelled = !!t.isCancelled;
+        const cardBg = isCancelled ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-blue-200 shadow-sm';
+        const strikeClass = isCancelled ? 'line-through text-slate-400' : '';
+
+        // Transaction Type
+        let jenisLayanan = 'Transfer';
+        let tipeBadgeColor = 'bg-blue-100 text-blue-700';
+        let tipeIcon = '<i class="fa-solid fa-paper-plane mr-1"></i>';
+
+        const rawMode = (t.brilinkMode || '').toUpperCase();
+        const obatLower = (t.obat || '').toLowerCase();
+
+        if (rawMode === 'TARIK' || obatLower.includes('tarik tunai')) {
+            jenisLayanan = 'Tarik Tunai';
+            tipeBadgeColor = 'bg-amber-100 text-amber-700';
+            tipeIcon = '<i class="fa-solid fa-hand-holding-dollar mr-1"></i>';
+        } else if (obatLower.includes('top up') || obatLower.includes('topup') || obatLower.includes('e-wallet')) {
+            jenisLayanan = 'Top Up E-Wallet';
+            tipeBadgeColor = 'bg-purple-100 text-purple-700';
+            tipeIcon = '<i class="fa-solid fa-wallet mr-1"></i>';
+        }
+
+        // Customer Name & Bank / Account Number
+        const namaPelanggan = t.pelanggan || 'Umum';
+        const rekening = t.brilinkRekening || t.rekening || '-';
+
+        // Sumber Dana
+        const sumberDana = t.brilinkSumberDana || (rawMode === 'TARIK' ? (t.brilinkAkunToko || 'EDC / Toko') : (t.metode || '-'));
+
+        // Nominal & Admin Fee Details (Amount & In/Out type)
+        const nominal = t.brilinkNominal !== undefined ? t.brilinkNominal : (t.total || 0);
+        const adminFee = t.brilinkAdmin !== undefined ? t.brilinkAdmin : (t.laba || 0);
+        const tipeAdmin = (t.brilinkTipePotongAdmin || 'dalam').toLowerCase();
+        const tipeAdminLabel = tipeAdmin === 'luar' ? 'Bayar di Luar' : 'Bayar di Dalam';
+        const tipeAdminBadge = tipeAdmin === 'luar' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200';
+
+        // Net Profit
+        const labaBersih = t.laba !== undefined ? t.laba : adminFee;
+
+        const redBatalBadge = isCancelled ? `<span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm mr-1"><i class="fa-solid fa-ban mr-1"></i>BATAL</span>` : '';
+
+        return `
+        <div class="border rounded-2xl p-3.5 transition-all ${cardBg}">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <p class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                        <i class="fa-regular fa-clock"></i> ${t.tanggal || '-'} • ${t.waktu || '-'}
+                    </p>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${tipeBadgeColor}">
+                            ${tipeIcon}${jenisLayanan}
+                        </span>
+                        ${redBatalBadge}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9.5px] font-bold text-slate-400 uppercase tracking-tight">Laba Bersih</p>
+                    <p class="text-sm font-black text-emerald-600 ${strikeClass}">+${rupiah(labaBersih)}</p>
+                </div>
+            </div>
+
+            <div class="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Pelanggan:</span>
+                    <span class="font-bold text-slate-800 truncate max-w-[200px]">${namaPelanggan}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">No. Rek / Akun:</span>
+                    <span class="font-bold font-mono text-slate-700">${rekening}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Sumber Dana:</span>
+                    <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 text-[11px]">${sumberDana}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Nominal Transaksi:</span>
+                    <span class="font-bold text-slate-800 ${strikeClass}">${rupiah(nominal)}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Biaya Admin:</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-800">${rupiah(adminFee)}</span>
+                        <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded ${tipeAdminBadge}">${tipeAdminLabel}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function bukaModalLabaPPOB() {
+    renderLabaPPOB();
+    bukaModalMobile('modalLabaPPOB', 'panelLabaPPOB');
+}
+
+function renderLabaPPOB() {
+    const wadah = document.getElementById('daftarLabaPPOB');
+    const badgeCount = document.getElementById('totalCountLabaPPOB');
+    const badgeTotal = document.getElementById('totalNominalLabaPPOB');
+    if (!wadah) return;
+
+    // Filter: Show transactions for Pulsa, Data, PLN, PDAM, BPJS, etc.
+    const listTrx = cashierHistory.filter(t => {
+        if (!t) return false;
+        if (t.isPPOB) return true;
+        const obatStr = (t.obat || '').toLowerCase();
+        return obatStr.includes('[pulsa]') || obatStr.includes('[paket data]') || obatStr.includes('[pln]') ||
+               obatStr.includes('[pdam]') || obatStr.includes('[bpjs]') || obatStr.includes('[pegadaian]');
+    });
+
+    let totalLaba = 0;
+    let countActive = 0;
+
+    listTrx.forEach(t => {
+        if (!t.isCancelled) {
+            totalLaba += (t.laba || 0);
+            countActive++;
+        }
+    });
+
+    if (badgeCount) badgeCount.textContent = `${countActive} Transaksi${listTrx.length > countActive ? ` (${listTrx.length - countActive} Batal)` : ''}`;
+    if (badgeTotal) badgeTotal.textContent = rupiah(totalLaba);
+
+    if (listTrx.length === 0) {
+        wadah.innerHTML = `
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
+                <i class="fa-solid fa-mobile-screen-button text-4xl text-slate-300 mb-3 block"></i>
+                <p class="font-bold text-slate-600 text-sm">Belum ada riwayat transaksi Pulsa & PPOB.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Transaksi Pulsa, Paket Data, PLN, PDAM, dan BPJS akan tampil di sini.</p>
+            </div>`;
+        return;
+    }
+
+    wadah.innerHTML = listTrx.map(t => {
+        const isCancelled = !!t.isCancelled;
+        const cardBg = isCancelled ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-cyan-200 shadow-sm';
+        const strikeClass = isCancelled ? 'line-through text-slate-400' : '';
+
+        // Category & Operator
+        const kategori = t.ppobKategori || 'PPOB';
+        const subKat = t.ppobSubKategori || '';
+        const operatorTeks = subKat ? `${kategori} • ${subKat}` : kategori;
+
+        // Extract Product Name and Target Phone/ID Number
+        let targetId = '-';
+        let namaProduk = t.obat || '-';
+
+        if (t.detailKeranjang && t.detailKeranjang.length > 0) {
+            const firstItem = t.detailKeranjang[0];
+            targetId = firstItem.varian || '-';
+            namaProduk = firstItem.nama || t.obat;
+        } else {
+            // Regex match target from obat e.g. "[Pulsa] Telkomsel 10k (08123456789)"
+            const matchTarget = (t.obat || '').match(/\(([^)]+)\)/);
+            if (matchTarget) targetId = matchTarget[1];
+        }
+
+        // Sumber Modal
+        const sumberModal = t.ppobVendor || t.metodeBayar || t.metode || '-';
+
+        // Selling Price vs HPP (Capital)
+        const jual = t.total || 0;
+        let hppModal = t.ppobModal !== undefined ? t.ppobModal : 0;
+        if (!hppModal && t.detailKeranjang && t.detailKeranjang.length > 0) {
+            hppModal = t.detailKeranjang[0].hppSatuan || t.detailKeranjang[0].hppTotalModal || 0;
+        }
+        if (!hppModal && t.laba !== undefined) {
+            hppModal = Math.max(0, jual - t.laba);
+        }
+
+        const profit = t.laba !== undefined ? t.laba : Math.max(0, jual - hppModal);
+
+        const redBatalBadge = isCancelled ? `<span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm mr-1"><i class="fa-solid fa-ban mr-1"></i>BATAL</span>` : '';
+
+        return `
+        <div class="border rounded-2xl p-3.5 transition-all ${cardBg}">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <p class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                        <i class="fa-regular fa-clock"></i> ${t.tanggal || '-'} • ${t.waktu || '-'}
+                    </p>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-cyan-100 text-cyan-800">
+                            <i class="fa-solid fa-bolt mr-1"></i>${operatorTeks}
+                        </span>
+                        ${redBatalBadge}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9.5px] font-bold text-slate-400 uppercase tracking-tight">Laba Bersih</p>
+                    <p class="text-sm font-black text-emerald-600 ${strikeClass}">+${rupiah(profit)}</p>
+                </div>
+            </div>
+
+            <div class="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Produk:</span>
+                    <span class="font-bold text-slate-800 truncate max-w-[200px]">${namaProduk}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">No. Tujuan / ID:</span>
+                    <span class="font-bold font-mono text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-100 text-[11px]">${targetId}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Sumber Modal:</span>
+                    <span class="font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-100 text-[11px]">${sumberModal}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Harga Jual vs HPP:</span>
+                    <div class="text-right ${strikeClass}">
+                        <span class="font-bold text-emerald-600">${rupiah(jual)}</span>
+                        <span class="text-slate-400 text-[10px] mx-1">vs</span>
+                        <span class="font-bold text-red-500">${rupiah(hppModal)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function bukaModalLabaRetail() {
+    renderLabaRetail();
+    bukaModalMobile('modalLabaRetail', 'panelLabaRetail');
+}
+
+function renderLabaRetail() {
+    const wadah = document.getElementById('daftarLabaRetail');
+    const badgeCount = document.getElementById('totalCountLabaRetail');
+    const badgeTotal = document.getElementById('totalNominalLabaRetail');
+    if (!wadah) return;
+
+    // Filter: Show physical retail item transactions (!isBRILink && !isPPOB && !isPelunasan)
+    const listTrx = cashierHistory.filter(t => {
+        if (!t) return false;
+        if (t.isBRILink || t.isPPOB || t.isPelunasan) return false;
+        // Make sure it's not a BRILink or PPOB transaction that lacked boolean flags
+        const obatStr = (t.obat || '').toLowerCase();
+        if (obatStr.includes('brilink') || obatStr.includes('pelunasan eceran')) return false;
+        if (obatStr.startsWith('[pulsa]') || obatStr.startsWith('[paket data]') || obatStr.startsWith('[pln]')) return false;
+        return true;
+    });
+
+    let totalLaba = 0;
+    let countActive = 0;
+
+    listTrx.forEach(t => {
+        if (!t.isCancelled) {
+            totalLaba += (t.laba || 0);
+            countActive++;
+        }
+    });
+
+    if (badgeCount) badgeCount.textContent = `${countActive} Transaksi${listTrx.length > countActive ? ` (${listTrx.length - countActive} Batal)` : ''}`;
+    if (badgeTotal) badgeTotal.textContent = rupiah(totalLaba);
+
+    if (listTrx.length === 0) {
+        wadah.innerHTML = `
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
+                <i class="fa-solid fa-shop text-4xl text-slate-300 mb-3 block"></i>
+                <p class="font-bold text-slate-600 text-sm">Belum ada riwayat transaksi Aksesoris / Retail Fisik.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Transaksi penjualan fisik dari kasir akan tampil di sini.</p>
+            </div>`;
+        return;
+    }
+
+    wadah.innerHTML = listTrx.map(t => {
+        const isCancelled = !!t.isCancelled;
+        const cardBg = isCancelled ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-amber-200 shadow-sm';
+        const strikeClass = isCancelled ? 'line-through text-slate-400' : '';
+
+        // Extract items if cart exists
+        let itemsHtml = '';
+        if (t.detailKeranjang && t.detailKeranjang.length > 0) {
+            itemsHtml = t.detailKeranjang.map(k => {
+                const subJual = (k.jual || 0) * (k.qty || 1);
+                const subHpp = (k.hppTotalModal !== undefined ? k.hppTotalModal : (k.hppSatuan || 0) * (k.qty || 1));
+                const subProfit = subJual - subHpp;
+                const namaItem = `${k.nama || '-'}${k.varian ? ' (' + k.varian + ')' : ''}`;
+
+                return `
+                <div class="py-1.5 border-b border-dashed border-slate-100 last:border-b-0">
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-slate-800 text-xs">${namaItem}</span>
+                        <span class="font-black text-slate-600 text-[11px] bg-slate-100 px-1.5 py-0.5 rounded">x${k.qty || 1}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1 text-[11px]">
+                        <span class="text-slate-500">Jual: <b class="text-emerald-600">${rupiah(subJual)}</b> <span class="text-slate-300">|</span> HPP: <b class="text-red-500">${rupiah(subHpp)}</b></span>
+                        <span class="font-bold text-emerald-600 ${strikeClass}">Laba: +${rupiah(subProfit)}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            const hppEst = Math.max(0, (t.total || 0) - (t.laba || 0));
+            itemsHtml = `
+            <div class="py-1">
+                <div class="flex justify-between items-start">
+                    <span class="font-bold text-slate-800 text-xs">${t.obat || 'Barang Retail'}</span>
+                    <span class="font-black text-slate-600 text-[11px] bg-slate-100 px-1.5 py-0.5 rounded">x${t.item || 1}</span>
+                </div>
+                <div class="flex justify-between items-center mt-1 text-[11px]">
+                    <span class="text-slate-500">Jual: <b class="text-emerald-600">${rupiah(t.total || 0)}</b> <span class="text-slate-300">|</span> HPP: <b class="text-red-500">${rupiah(hppEst)}</b></span>
+                    <span class="font-bold text-emerald-600 ${strikeClass}">Laba: +${rupiah(t.laba || 0)}</span>
+                </div>
+            </div>`;
+        }
+
+        const redBatalBadge = isCancelled ? `<span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm mr-1"><i class="fa-solid fa-ban mr-1"></i>BATAL</span>` : '';
+        const metodeBadge = t.metode === 'Tunai' ? 'bg-emerald-100 text-emerald-700' : (t.metode === 'QRIS' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700');
+
+        return `
+        <div class="border rounded-2xl p-3.5 transition-all ${cardBg}">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <p class="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                        <i class="fa-regular fa-clock"></i> ${t.tanggal || '-'} • ${t.waktu || '-'}
+                    </p>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${metodeBadge}">
+                            ${t.metode || 'Tunai'}
+                        </span>
+                        ${t.pelanggan && t.pelanggan !== 'UMUM' ? `<span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">👤 ${t.pelanggan}</span>` : ''}
+                        ${redBatalBadge}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9.5px] font-bold text-slate-400 uppercase tracking-tight">Total Laba Transaksi</p>
+                    <p class="text-sm font-black text-emerald-600 ${strikeClass}">+${rupiah(t.laba || 0)}</p>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100">
+                <p class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider mb-1">Item Barang:</p>
+                <div class="bg-slate-50/60 rounded-xl p-2.5 border border-slate-100">
+                    ${itemsHtml}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}

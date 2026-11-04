@@ -185,7 +185,7 @@ tailwind.config = {
                 <!-- HORIZONTAL MULTI-CATEGORY PROFIT BREAKDOWN BOXES -->
                 <div class="mx-6 mt-3 grid grid-cols-3 gap-2 mb-3">
                     <!-- Box 1: BRILink -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-sm">
+                    <div onclick="bukaModalLabaBRILink()" class="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-sm cursor-pointer hover:border-blue-300 hover:shadow transition-all active:scale-95">
                         <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs mb-1">
                             <i class="fa-solid fa-building-columns"></i>
                         </div>
@@ -194,7 +194,7 @@ tailwind.config = {
                     </div>
 
                     <!-- Box 2: Pulsa/PPOB -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-sm">
+                    <div onclick="bukaModalLabaPPOB()" class="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-sm cursor-pointer hover:border-cyan-300 hover:shadow transition-all active:scale-95">
                         <div class="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center text-xs mb-1">
                             <i class="fa-solid fa-mobile-screen-button"></i>
                         </div>
@@ -203,7 +203,7 @@ tailwind.config = {
                     </div>
 
                     <!-- Box 3: Aksesoris -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-sm">
+                    <div onclick="bukaModalLabaRetail()" class="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-sm cursor-pointer hover:border-amber-300 hover:shadow transition-all active:scale-95">
                         <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs mb-1">
                             <i class="fa-solid fa-shop"></i>
                         </div>
@@ -2834,6 +2834,99 @@ tailwind.config = {
             <button onclick="prosesGantiSandiSupabase()" class="w-full bg-corporate-600 hover:bg-corporate-700 text-white font-black py-4 rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
                 <i class="fa-solid fa-shield-halved"></i> Simpan Sandi Baru
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LABA BRILINK (Finance & Top Up) -->
+<div id="modalLabaBRILink" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalLabaBRILink')"></div>
+    <div class="bg-white w-full max-h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:max-w-lg sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelLabaBRILink">
+        <div class="bg-gradient-to-r from-blue-900 to-slate-900 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
+            <div>
+                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-building-columns text-amber-400"></i> Rincian Laba BRILink
+                </h3>
+                <p class="text-[9px] text-blue-200 font-bold uppercase tracking-widest mt-0.5">Transfer, Tarik Tunai & Top Up E-Wallet</p>
+            </div>
+            <button onclick="tutupModalMobile('modalLabaBRILink')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="bg-blue-50/70 border-b border-blue-100 px-6 py-3 flex items-center justify-between shrink-0">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Transaksi</p>
+                <p class="text-sm font-black text-slate-800" id="totalCountLabaBRILink">0 Transaksi</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Laba Bersih</p>
+                <p class="text-base font-black text-emerald-600" id="totalNominalLabaBRILink">Rp 0</p>
+            </div>
+        </div>
+        <div class="p-4 sm:p-6 space-y-3 overflow-y-auto hide-scrollbar flex-1" id="daftarLabaBRILink">
+            <!-- Populated dynamically via renderLabaBRILink() -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LABA PULSA (Digital & PPOB) -->
+<div id="modalLabaPPOB" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalLabaPPOB')"></div>
+    <div class="bg-white w-full max-h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:max-w-lg sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelLabaPPOB">
+        <div class="bg-gradient-to-r from-cyan-900 to-slate-900 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
+            <div>
+                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button text-cyan-400"></i> Rincian Laba Pulsa & PPOB
+                </h3>
+                <p class="text-[9px] text-cyan-200 font-bold uppercase tracking-widest mt-0.5">Pulsa, Paket Data, PLN, BPJS & Tagihan</p>
+            </div>
+            <button onclick="tutupModalMobile('modalLabaPPOB')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="bg-cyan-50/70 border-b border-cyan-100 px-6 py-3 flex items-center justify-between shrink-0">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Transaksi</p>
+                <p class="text-sm font-black text-slate-800" id="totalCountLabaPPOB">0 Transaksi</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Laba Bersih</p>
+                <p class="text-base font-black text-emerald-600" id="totalNominalLabaPPOB">Rp 0</p>
+            </div>
+        </div>
+        <div class="p-4 sm:p-6 space-y-3 overflow-y-auto hide-scrollbar flex-1" id="daftarLabaPPOB">
+            <!-- Populated dynamically via renderLabaPPOB() -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LABA AKSESORIS (Physical Retail) -->
+<div id="modalLabaRetail" class="absolute inset-0 z-[160] hidden flex items-end sm:items-center justify-center pointer-events-none">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity pointer-events-auto" onclick="tutupModalMobile('modalLabaRetail')"></div>
+    <div class="bg-white w-full max-h-[90vh] rounded-t-3xl sm:rounded-3xl sm:w-[90%] sm:max-w-lg sm:mb-10 shadow-2xl relative z-10 pointer-events-auto transform transition-transform translate-y-full flex flex-col overflow-hidden" id="panelLabaRetail">
+        <div class="bg-gradient-to-r from-amber-900 to-slate-900 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
+            <div>
+                <h3 class="font-black text-white text-lg tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-shop text-amber-400"></i> Rincian Laba Aksesoris
+                </h3>
+                <p class="text-[9px] text-amber-200 font-bold uppercase tracking-widest mt-0.5">Penjualan Barang Fisik Retail</p>
+            </div>
+            <button onclick="tutupModalMobile('modalLabaRetail')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="bg-amber-50/70 border-b border-amber-100 px-6 py-3 flex items-center justify-between shrink-0">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Transaksi</p>
+                <p class="text-sm font-black text-slate-800" id="totalCountLabaRetail">0 Transaksi</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Laba Bersih</p>
+                <p class="text-base font-black text-emerald-600" id="totalNominalLabaRetail">Rp 0</p>
+            </div>
+        </div>
+        <div class="p-4 sm:p-6 space-y-3 overflow-y-auto hide-scrollbar flex-1" id="daftarLabaRetail">
+            <!-- Populated dynamically via renderLabaRetail() -->
         </div>
     </div>
 </div>
