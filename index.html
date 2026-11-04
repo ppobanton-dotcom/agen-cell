@@ -160,43 +160,75 @@ tailwind.config = {
                     </div>
                 </div>
 
-                <div class="mx-6 -mt-16 bg-white rounded-3xl p-6 shadow-md relative z-10 border border-slate-200">
-                    <h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <div class="mx-6 -mt-20 bg-white rounded-2xl p-3 shadow-md relative z-10 border border-slate-200">
+                    <h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                         <i class="fa-solid fa-wallet text-slate-400"></i> Laporan Hari Ini
                     </h2>
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-sm font-semibold text-slate-600">Pemasukan (Omzet)</span>
-                        <span class="text-sm font-bold text-corporate-700" id="berandaOmzet">Rp 0</span>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-xs font-semibold text-slate-600">Pemasukan (Omzet)</span>
+                        <span class="text-xs font-bold text-corporate-700" id="berandaOmzet">Rp 0</span>
                     </div>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-sm font-semibold text-slate-600">Modal Barang (HPP)</span>
-                        <span class="text-sm font-bold text-red-500" id="berandaHPP">-Rp 0</span>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-slate-600">Modal Barang (HPP)</span>
+                        <span class="text-xs font-bold text-red-500" id="berandaHPP">-Rp 0</span>
                     </div>
-                    <div class="border-t border-dashed border-slate-200 pt-4 mt-2 flex justify-between items-center">
-                        <span class="text-sm font-bold text-slate-800">Laba Bersih</span>
-                        <span class="text-xl font-black text-emerald-600" id="berandaLaba">Rp 0</span>
+                    <div class="border-t border-dashed border-slate-200 pt-2 mt-1 flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-800">Laba Bersih</span>
+                        <span class="text-lg font-black text-emerald-600" id="berandaLaba">Rp 0</span>
                     </div>
-                    <div id="wadahPelunasan" class="hidden flex justify-between items-center mt-2 border-t border-slate-100 pt-2">
-                        <span class="text-xs font-bold text-slate-500">Terima Pelunasan Kasbon</span>
-                        <span class="text-sm font-bold text-blue-600" id="berandaPelunasan">Rp 0</span>
+                    <div id="wadahPelunasan" class="hidden flex justify-between items-center mt-1.5 border-t border-slate-100 pt-1.5">
+                        <span class="text-[11px] font-bold text-slate-500">Terima Pelunasan Kasbon</span>
+                        <span class="text-xs font-bold text-blue-600" id="berandaPelunasan">Rp 0</span>
                     </div>
                 </div>
 
-                <!-- KARTU KHUSUS LABA ADMIN BRILINK -->
-                <div class="mx-6 mt-3 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-4 text-white shadow-md border border-blue-500/30 relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 text-amber-500/10 text-7xl"><i class="fa-solid fa-building-columns"></i></div>
-                    <div class="flex justify-between items-center relative z-10">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/30 text-amber-400 flex items-center justify-center text-lg shrink-0">
-                                <i class="fa-solid fa-coins"></i>
+                <!-- SLIM MULTI-CATEGORY PROFIT BREAKDOWN CARDS -->
+                <div class="mx-6 mt-3 flex flex-col gap-2">
+                    <!-- 1. BRILink Admin Profit -->
+                    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl px-3.5 py-2.5 text-white shadow-sm border border-blue-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-400 flex items-center justify-center text-sm shrink-0">
+                                <i class="fa-solid fa-building-columns"></i>
                             </div>
-                            <div>
-                                <h3 class="text-[10px] font-black uppercase tracking-widest text-amber-300">Laba Admin BRILink</h3>
-                                <p class="text-[9px] text-slate-300 font-medium">Fee Transaksi Finansial</p>
+                            <div class="truncate">
+                                <h3 class="text-[10px] font-black uppercase tracking-wider text-amber-300 leading-tight">Laba Admin BRILink</h3>
+                                <p class="text-[9px] text-slate-300 font-medium leading-tight">Fee Transaksi Finansial</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-lg font-black text-amber-400" id="berandaLabaBRILink">Rp 0</span>
+                        <div class="text-right shrink-0 pl-2">
+                            <span class="text-sm font-black text-amber-400" id="berandaLabaBRILink">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Pulsa & PPOB Transaction Profit -->
+                    <div class="bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 rounded-2xl px-3.5 py-2.5 text-white shadow-sm border border-cyan-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 flex items-center justify-center text-sm shrink-0">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            </div>
+                            <div class="truncate">
+                                <h3 class="text-[10px] font-black uppercase tracking-wider text-cyan-300 leading-tight">Laba Pulsa & PPOB</h3>
+                                <p class="text-[9px] text-slate-300 font-medium leading-tight">Margin Produk Digital</p>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0 pl-2">
+                            <span class="text-sm font-black text-cyan-300" id="berandaLabaPPOB">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Accessories & Retail Sales Profit -->
+                    <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl px-3.5 py-2.5 text-white shadow-sm border border-emerald-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center text-sm shrink-0">
+                                <i class="fa-solid fa-headphones"></i>
+                            </div>
+                            <div class="truncate">
+                                <h3 class="text-[10px] font-black uppercase tracking-wider text-emerald-300 leading-tight">Laba Aksesoris & Retail</h3>
+                                <p class="text-[9px] text-slate-300 font-medium leading-tight">Penjualan Fisik Toko</p>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0 pl-2">
+                            <span class="text-sm font-black text-emerald-400" id="berandaLabaRetail">Rp 0</span>
                         </div>
                     </div>
                 </div>
@@ -213,6 +245,33 @@ tailwind.config = {
                     </div>
 
                     <div id="wadahSaldoSlider" class="flex flex-nowrap overflow-x-auto snap-x hide-scrollbar gap-x-3 pb-1">
+                    </div>
+
+                    <!-- CASH & DIGITAL LIQUIDITY ACCUMULATION BAR -->
+                    <div class="mt-2.5 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-slate-800/80 rounded-full py-1.5 px-3 shadow-md grid grid-cols-3 divide-x divide-slate-800 text-center text-white">
+                        <!-- Total Physical Cash (Laci Fisik) -->
+                        <div class="flex flex-col items-center justify-center px-1">
+                            <span class="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0"></span> Kas Fisik
+                            </span>
+                            <span class="text-[9.5px] font-black text-emerald-400 mt-0.5 truncate max-w-full" id="totalKasFisik">Rp 0</span>
+                        </div>
+
+                        <!-- Total Digital Money -->
+                        <div class="flex flex-col items-center justify-center px-1">
+                            <span class="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block shrink-0"></span> Uang Digital
+                            </span>
+                            <span class="text-[9.5px] font-black text-cyan-300 mt-0.5 truncate max-w-full" id="totalUangDigital">Rp 0</span>
+                        </div>
+
+                        <!-- Grand Total -->
+                        <div class="flex flex-col items-center justify-center px-1">
+                            <span class="text-[7.5px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0"></span> Grand Total
+                            </span>
+                            <span class="text-[10px] font-black text-amber-400 mt-0.5 truncate max-w-full" id="totalLikuiditasGrand">Rp 0</span>
+                        </div>
                     </div>
                 </div>
             </div>

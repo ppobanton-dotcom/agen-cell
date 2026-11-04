@@ -563,6 +563,7 @@ function renderBerandaMobile() {
     let omzet = 0, laba = 0, hpp = 0, daftarTerlaris = {}, totalKasbonBelumLunas = 0;
     let totalItemTerjualHariIni = 0, totalPembeliHariIni = 0;
     let totalPelunasan = 0;
+    let labaPPOBHariIni = 0, labaRetailHariIni = 0;
     let setPembeliUnikBeranda = new Set();
 
     cashierHistory.forEach(t => {
@@ -570,6 +571,12 @@ function renderBerandaMobile() {
             if (!t.isPelunasan) {
                 omzet += t.total || 0; laba += t.laba || 0; hpp += ((t.total || 0) - (t.laba || 0));
                 totalItemTerjualHariIni += (t.item || 0);
+
+                if (t.isPPOB) {
+                    labaPPOBHariIni += (t.laba || 0);
+                } else if (!t.isBRILink) {
+                    labaRetailHariIni += (t.laba || 0);
+                }
 
                 let kunciPelacak = (t.metode === 'Debt') ? `DEBT_${t.tanggal}_${t.waktu}_${t.pelanggan}` : `TRX_${t.id}`;
                 setPembeliUnikBeranda.add(kunciPelacak);
@@ -604,6 +611,14 @@ function renderBerandaMobile() {
     if (document.getElementById('berandaOmzet')) document.getElementById('berandaOmzet').textContent = rupiah(Math.round(omzet));
     if (document.getElementById('berandaHPP')) document.getElementById('berandaHPP').textContent = '- ' + rupiah(Math.round(hpp));
     if (document.getElementById('berandaLaba')) document.getElementById('berandaLaba').textContent = rupiah(Math.round(laba));
+
+    // Multi-Category Profit Breakdown Badges
+    const badgeLabaBRILink = document.getElementById('berandaLabaBRILink');
+    if (badgeLabaBRILink) badgeLabaBRILink.textContent = rupiah(getLabaBRILink());
+    const badgeLabaPPOB = document.getElementById('berandaLabaPPOB');
+    if (badgeLabaPPOB) badgeLabaPPOB.textContent = rupiah(Math.round(labaPPOBHariIni));
+    const badgeLabaRetail = document.getElementById('berandaLabaRetail');
+    if (badgeLabaRetail) badgeLabaRetail.textContent = rupiah(Math.round(labaRetailHariIni));
 
     if(document.getElementById('berandaPelunasan')) {
         document.getElementById('berandaPelunasan').textContent = '+ ' + rupiah(totalPelunasan);
@@ -8856,12 +8871,22 @@ function renderSaldoDashboard() {
         return { icon: 'fa-wallet', bg: 'bg-indigo-100', text: 'text-indigo-600', valText: 'text-indigo-700' };
     };
 
+    let totalKasFisik = 0;
+    let totalDigitalMoney = 0;
+
     if (wadah) {
         wadah.innerHTML = activeWallets.map(wallet => {
             const style = getWalletIconStyle(wallet);
             const balance = getWalletBalance(wallet.name);
             const badgeId = wallet.balanceKey || ('saldo_' + wallet.id);
-            const shortName = (wallet.id === 'laci' || wallet.name === 'Laci Fisik') ? 'Laci' : (wallet.name === 'Bank BRI' ? 'BRI' : wallet.name);
+            const isLaci = (wallet.id === 'laci' || wallet.name === 'Laci Fisik' || wallet.name.toLowerCase() === 'laci');
+            const shortName = isLaci ? 'Laci' : (wallet.name === 'Bank BRI' ? 'BRI' : wallet.name);
+
+            if (isLaci) {
+                totalKasFisik += balance;
+            } else {
+                totalDigitalMoney += balance;
+            }
 
             return `
                 <div class="flex-shrink-0 w-1/3 min-w-[110px] snap-start bg-white border border-slate-200 rounded-2xl p-2.5 flex flex-col items-center text-center shadow-sm">
@@ -8873,7 +8898,26 @@ function renderSaldoDashboard() {
                 </div>
             `;
         }).join('');
+    } else {
+        activeWallets.forEach(wallet => {
+            const balance = getWalletBalance(wallet.name);
+            const isLaci = (wallet.id === 'laci' || wallet.name === 'Laci Fisik' || wallet.name.toLowerCase() === 'laci');
+            if (isLaci) {
+                totalKasFisik += balance;
+            } else {
+                totalDigitalMoney += balance;
+            }
+        });
     }
+
+    // Update Cash & Digital Liquidity Accumulation Bar
+    const grandTotalLiquidity = totalKasFisik + totalDigitalMoney;
+    const badgeKasFisik = document.getElementById('totalKasFisik');
+    if (badgeKasFisik) badgeKasFisik.textContent = rupiah(totalKasFisik);
+    const badgeUangDigital = document.getElementById('totalUangDigital');
+    if (badgeUangDigital) badgeUangDigital.textContent = rupiah(totalDigitalMoney);
+    const badgeGrandTotal = document.getElementById('totalLikuiditasGrand');
+    if (badgeGrandTotal) badgeGrandTotal.textContent = rupiah(grandTotalLiquidity);
 
     const badgeLabaBRILink = document.getElementById('berandaLabaBRILink');
     if (badgeLabaBRILink) badgeLabaBRILink.textContent = rupiah(getLabaBRILink());
