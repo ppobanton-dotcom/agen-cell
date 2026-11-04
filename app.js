@@ -56,6 +56,7 @@ function triggerHaptic(pattern = 100) {
 function hitungSaldoLaciFisik() {
     let lTunai = 0, lPelunasanTunai = 0, totalKeluar = 0;
     cashierHistory.forEach(t => {
+        if (t.isCancelled) return;
         if (!t.isPelunasan && t.metode === 'Tunai') { lTunai += (t.total || 0); }
         else if (t.isPelunasan && (t.metodeBayar === 'Tunai' || t.metode === 'Tunai')) { lPelunasanTunai += (t.total || 0); }
     });
@@ -70,6 +71,7 @@ function hitungSaldoLaciFisik() {
 function hitungSaldoQRIS() {
     let lQRIS = 0, totalKeluarBank = 0;
     cashierHistory.forEach(t => {
+        if (t.isCancelled) return;
         if (!t.isPelunasan && t.metode === 'QRIS') { lQRIS += (t.total || 0); }
         else if (t.isPelunasan && (t.metodeBayar === 'QRIS' || t.metodeBayar === 'qris' || t.metode === 'QRIS')) { lQRIS += (t.total || 0); }
     });
@@ -567,6 +569,7 @@ function renderBerandaMobile() {
     let setPembeliUnikBeranda = new Set();
 
     cashierHistory.forEach(t => {
+        if (t.isCancelled) return;
         if (t.tanggal === tglHariIni) {
             if (!t.isPelunasan) {
                 omzet += t.total || 0; laba += t.laba || 0; hpp += ((t.total || 0) - (t.laba || 0));
@@ -650,6 +653,7 @@ let topQtyMurni = (siklusAktif.qtyAwal || 0) + (siklusAktif.qtyTambahan || 0);
 
     let terjualSiklusIni = 0;
     cashierHistory.forEach(t => {
+        if (t.isCancelled) return;
         if (t.id >= waktuMulai && !t.isPelunasan) {
             terjualSiklusIni += (t.item || 0);
         }
@@ -761,6 +765,7 @@ let topQtyMurni = (siklusAktif.qtyAwal || 0) + (siklusAktif.qtyTambahan || 0);
                 let lakuMurniHariIni = 0;
                 let pembeliMurniHariIni = new Set();
                 cashierHistory.forEach(t => {
+                    if (t.isCancelled) return;
                     if (t.tanggal === tglHariIni && !t.isPelunasan) {
                         lakuMurniHariIni += (t.item || 0);
                         let kunciMurni = (t.metode === 'Debt') ? `DEBT_${t.tanggal}_${t.waktu}_${t.pelanggan}` : `TRX_${t.id}`;
@@ -1234,10 +1239,12 @@ function renderRiwayatMobile() {
                 grupRiwayat[key] = {
                     idGabungan: t.id, tanggal: t.tanggal, waktu: t.waktu, metode: t.metode, pelanggan: t.pelanggan, kasir: t.kasir,
                     isPelunasan: t.isPelunasan, isBintang: t.isBintang, statusLunas: t.statusLunas,
+                    isCancelled: !!t.isCancelled,
                     total: 0, item: 0, rincian: [], rawIds: [], metodeBayar: t.metodeBayar
                 };
             }
 
+        if (t.isCancelled) grupRiwayat[key].isCancelled = true;
         grupRiwayat[key].total += (t.total || 0);
         grupRiwayat[key].item += (t.item || 1);
         grupRiwayat[key].rawIds.push(t.id);
@@ -1316,9 +1323,14 @@ function renderRiwayatMobile() {
     });
 
         wadah.innerHTML = Object.values(grupRiwayat).map(g => {
+        let isCancelled = !!g.isCancelled;
         let badgeWarna = g.metode === 'Tunai' ? 'bg-emerald-100 text-emerald-700' : (g.metode === 'QRIS' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700');
         let teksStatus = g.metode; let isSelected = g.rawIds.some(id => itemTerpilihRiwayat.includes(id));
         let bgCard = isSelected ? 'bg-blue-50 border-blue-400 shadow-md transform scale-[0.98]' : 'bg-white border-slate-200 shadow-sm';
+
+        if (isCancelled) {
+            bgCard += ' opacity-50 bg-slate-50/70';
+        }
 
         if(g.metode === 'Debt') {
             // [LOGIKA BARU] Cek Silang: Pastikan SEMUA item di dalam kotak ini benar-benar lunas
@@ -1350,9 +1362,9 @@ function renderRiwayatMobile() {
             areaRincian = `<div class="mt-3 mb-2 pt-2 border-t border-dashed border-slate-200"><p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Rincian Faktur:</p><div class="w-full">${g.rincian.join('')}</div></div>`;
         }
 
-        let tombolPortal = (g.metode === 'Debt' && g.pelanggan) ? `<button onclick="event.stopPropagation(); lompatKeBukuPiutang('${g.pelanggan}')" class="mt-2 text-[9px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors flex items-center gap-1.5 w-max active:scale-95"><i class="fa-solid fa-book-open"></i> Lihat Buku Piutang</button>` : '';
+        let tombolPortal = (g.metode === 'Debt' && g.pelanggan && !isCancelled) ? `<button onclick="event.stopPropagation(); lompatKeBukuPiutang('${g.pelanggan}')" class="mt-2 text-[9px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors flex items-center gap-1.5 w-max active:scale-95"><i class="fa-solid fa-book-open"></i> Lihat Buku Piutang</button>` : '';
 
-        // [PERISAI LOGIKA] Sembunyikan tombol batal jika utang (Debt) sudah dicicil atau lunas
+        // [PERISAI LOGIKA] Sembunyikan tombol batal jika utang (Debt) sudah dicicil atau lunas atau sudah dibatalkan
         let isUtangTercicil = g.metode === 'Debt' && cashierHistory.some(p => {
             if (!p.isPelunasan || !p.idTerkait) return false;
             let arrTerkait = p.idTerkait.toString().split(',').map(Number);
@@ -1388,14 +1400,18 @@ function renderRiwayatMobile() {
         let isTerkunciWaktu = isLewatTutupBuku || isLewat24Jam;
 
         let arrayIdsStr = `[${g.rawIds.join(',')}]`;
-        let btnBatalHtml = (isUtangTercicil || isUtangLunas || isTerkunciWaktu) ? '' : `<button onclick="event.stopPropagation(); prosesBatalTransaksiMobile(${arrayIdsStr})" class="text-[10px] text-red-500 hover:bg-red-50 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-red-100 shadow-sm active:scale-95"><i class="fa-solid fa-rotate-left"></i> Batal</button>`;
+        let btnBatalHtml = (isUtangTercicil || isUtangLunas || isTerkunciWaktu || isCancelled) ? '' : `<button onclick="event.stopPropagation(); prosesBatalTransaksiMobile(${arrayIdsStr})" class="text-[10px] text-red-500 hover:bg-red-50 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-red-100 shadow-sm active:scale-95"><i class="fa-solid fa-rotate-left"></i> Batal</button>`;
         let tombolAksi = modeSeleksiRiwayatAktif ? '' : `
             <div class="flex gap-2 relative z-10 mt-3 justify-end border-t border-slate-100 pt-3">
                 ${btnBatalHtml}
                 <button onclick="event.stopPropagation(); prosesCetakStrukMobile(${g.rawIds[0]}, this)" class="text-[10px] text-blue-600 hover:bg-blue-50 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-blue-100 shadow-sm active:scale-95"><i class="fa-solid fa-print"></i> Cetak</button>
             </div>`;
 
-                       return `<div id="kartu-riwayat-${g.waktu.replace(/[:\.]/g,'')}-${g.pelanggan ? g.pelanggan.toUpperCase().replace(/\s/g,'') : 'UMUM'}" onpointerdown="mulaiTekanRiwayat(${g.rawIds[0]})" onpointerup="lepasTekanRiwayat()" onpointerleave="lepasTekanRiwayat()" onclick="klikItemRiwayat(${g.rawIds[0]})" class="${bgCard} select-none rounded-2xl p-4 flex flex-col transition-all cursor-pointer relative group"><div class="flex justify-between items-start pointer-events-none"><div class="pr-2 flex-1"><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5 mb-1"><i class="fa-regular fa-calendar-days"></i> ${g.tanggal} • ${g.waktu}</p><h3 class="font-bold text-slate-800 text-sm leading-tight inline-block mb-1">${judulObat} ${starIcon}</h3><p class="text-[10px] text-slate-500 font-medium">Oleh: ${g.kasir}</p>${badgePelunasanHtml}${teksKonsumen}</div><div class="text-right shrink-0"><p class="font-black ${isSelected ? 'text-blue-700' : 'text-corporate-700'} text-base">${rupiah(g.total)}</p><span class="inline-block mt-1.5 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${badgeWarna}">${teksStatus}</span></div></div>${areaRincian}${tombolPortal}${tombolAksi}</div>`;
+        let redBatalBadge = isCancelled ? `<span class="inline-block mt-1.5 mr-1.5 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm"><i class="fa-solid fa-ban mr-1"></i>BATAL</span>` : '';
+        let strikeClass = isCancelled ? 'line-through text-slate-400' : '';
+        let headerTextClass = isCancelled ? 'line-through text-slate-400' : 'text-slate-800';
+
+        return `<div id="kartu-riwayat-${g.waktu.replace(/[:\.]/g,'')}-${g.pelanggan ? g.pelanggan.toUpperCase().replace(/\s/g,'') : 'UMUM'}" onpointerdown="mulaiTekanRiwayat(${g.rawIds[0]})" onpointerup="lepasTekanRiwayat()" onpointerleave="lepasTekanRiwayat()" onclick="klikItemRiwayat(${g.rawIds[0]})" class="${bgCard} select-none rounded-2xl p-4 flex flex-col transition-all cursor-pointer relative group"><div class="flex justify-between items-start pointer-events-none"><div class="pr-2 flex-1"><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5 mb-1"><i class="fa-regular fa-calendar-days"></i> ${g.tanggal} • ${g.waktu}</p><h3 class="font-bold ${headerTextClass} text-sm leading-tight inline-block mb-1">${judulObat} ${starIcon}</h3><p class="text-[10px] text-slate-500 font-medium">Oleh: ${g.kasir}</p>${badgePelunasanHtml}${teksKonsumen}</div><div class="text-right shrink-0"><p class="font-black ${isSelected ? 'text-blue-700' : (isCancelled ? 'text-slate-400' : 'text-corporate-700')} ${strikeClass} text-base">${rupiah(g.total)}</p><div class="flex items-center justify-end mt-1.5">${redBatalBadge}<span class="inline-block px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${badgeWarna}">${teksStatus}</span></div></div></div>${areaRincian}${tombolPortal}${tombolAksi}</div>`;
   }).join('');
 
     // --- INJEKSI TOMBOL LOAD MORE DI BAWAH DAFTAR ---
@@ -4229,14 +4245,25 @@ function prosesBayarMobile() {
     sinkronKeAwanMobile(); // Selalu panggil, biar fungsi cloud sync yang mikirin mau push apa queue
 }
 
+async function cancelTransaction(idTransaksiInput) {
+    return prosesBatalTransaksiMobile(idTransaksiInput);
+}
+
 async function prosesBatalTransaksiMobile(idTransaksiInput) {
-    let confirmBatal = await customConfirm("Batalkan transaksi ini?\n\nJika ini penjualan biasa, uang ditarik & obat diretur. Jika ini Pelunasan, utang akan dihidupkan kembali tanpa mengacaukan stok.");
+    let confirmBatal = await customConfirm("Batalkan transaksi ini?\n\nSaldo dan aset akan dipulihkan secara otomatis sesuai pilar bisnis (BRILink, PPOB, atau Retail).");
     if (confirmBatal) {
         // Normalisasi input menjadi array (Mendukung Pembatalan Multi-ID hasil Split)
         let arrIds = Array.isArray(idTransaksiInput) ? idTransaksiInput : [idTransaksiInput];
         let transaksiYangDibatalkan = cashierHistory.filter(t => arrIds.includes(t.id));
 
         if (transaksiYangDibatalkan.length === 0) return tutupConfirmMobile();
+
+        // Cek jika sudah pernah dibatalkan (Prevent double cancellation)
+        let sudahBatalSemua = transaksiYangDibatalkan.every(t => t.isCancelled);
+        if (sudahBatalSemua) {
+            tutupConfirmMobile();
+            return setTimeout(() => alert("⚠️ Transaksi ini sudah dibatalkan sebelumnya!"), 300);
+        }
 
         // Ambil sampel pertama untuk cek jenis transaksi (Kuitansi gabungan pasti sejenis)
         const sampelTrx = transaksiYangDibatalkan[0];
@@ -4254,78 +4281,175 @@ async function prosesBatalTransaksiMobile(idTransaksiInput) {
             }
         }
 
-        // Kumpulkan semua detail dari seluruh ID yang batal secara paralel
-        let totalUangBatal = 0;
-        let kumpulanItemRetur = [];
-        let idTerkaitGabungan = [];
-
+        // Iterasi dan batalkan masing-masing transaksi secara presisi
         transaksiYangDibatalkan.forEach(trx => {
-            totalUangBatal += (trx.total || 0);
-            if (trx.idTerkait) {
-                idTerkaitGabungan = idTerkaitGabungan.concat(trx.idTerkait.toString().split(','));
-            }
-            if (trx.detailKeranjang && trx.detailKeranjang.length > 0) {
-                kumpulanItemRetur = kumpulanItemRetur.concat(trx.detailKeranjang);
-            } else if (!trx.isPelunasan) {
-                // Fallback riwayat lama sebelum keranjang array
-                let qty = trx.item || 1;
-                let hppRetur = Math.round(((trx.total || 0) - (trx.laba || 0)) / qty);
-                                                let hppAbsolutLama = ((trx.total || 0) - (trx.laba || 0));
-                kumpulanItemRetur.push({
-                    dnaInduk: 'DNA-RETUR-OLD', nama: trx.obat, jual: Math.round((trx.total || 0) / qty),
-                    qty: qty, hppSatuan: hppRetur, hppTotalModal: hppAbsolutLama
-                });
+            if (trx.isCancelled) return; // Prevent double reversal for individual item
+
+            // Tandai Soft Delete
+            trx.isCancelled = true;
+
+            // ==========================================
+            // PILAR 1: KEUANGAN BRILink (isBRILink)
+            // ==========================================
+            if (trx.isBRILink) {
+                const mode = trx.brilinkMode || 'TRANSFER';
+                const sumberDana = trx.brilinkSumberDana;
+                const tipePotongAdmin = trx.brilinkTipePotongAdmin || 'dalam';
+                const nominal = trx.brilinkNominal || 0;
+                const admin = trx.brilinkAdmin || (trx.laba || 0);
+
+                if (mode === 'TRANSFER') {
+                    if (sumberDana === 'ATM Pelanggan') {
+                        if (tipePotongAdmin === 'dalam') {
+                            const dompetFee = trx.brilinkDompetFee || 'Bank BRI';
+                            const saldoDompet = getWalletBalance(dompetFee);
+                            setWalletBalance(dompetFee, saldoDompet - admin);
+                        } else {
+                            const saldoLaci = getWalletBalance('Laci');
+                            setWalletBalance('Laci', saldoLaci - admin);
+                        }
+                    } else {
+                        // Dompet/Bank Toko (BRI, SeaBank, GoPay, DANA)
+                        const walletId = sumberDana;
+                        if (tipePotongAdmin === 'dalam') {
+                            // Asli: Laci + N, Digital - (N - A)
+                            // Reversal: Laci - N, Digital + (N - A)
+                            const deduction = nominal - admin;
+                            setWalletBalance('Laci', getWalletBalance('Laci') - nominal);
+                            setWalletBalance(walletId, getWalletBalance(walletId) + deduction);
+                        } else {
+                            // Asli: Laci + (N + A), Digital - N
+                            // Reversal: Laci - (N + A), Digital + N
+                            setWalletBalance('Laci', getWalletBalance('Laci') - (nominal + admin));
+                            setWalletBalance(walletId, getWalletBalance(walletId) + nominal);
+                        }
+                    }
+                } else if (mode === 'TARIK') {
+                    const akunToko = trx.brilinkAkunToko || trx.brilinkRekening || 'Bank BRI';
+                    if (tipePotongAdmin === 'luar') {
+                        // Asli: akunToko + N, Laci - (N - A)
+                        // Reversal: akunToko - N, Laci + (N - A)
+                        const uangKeluarLaci = nominal - admin;
+                        setWalletBalance(akunToko, getWalletBalance(akunToko) - nominal);
+                        setWalletBalance('Laci', getWalletBalance('Laci') + uangKeluarLaci);
+                    } else {
+                        // Asli: akunToko + (N + A), Laci - N
+                        // Reversal: akunToko - (N + A), Laci + N
+                        setWalletBalance(akunToko, getWalletBalance(akunToko) - (nominal + admin));
+                        setWalletBalance('Laci', getWalletBalance('Laci') + nominal);
+                    }
+                }
+
+                // Kurangi Laba BRILink terisolasi
+                deductLabaBRILink(admin);
+
+                // Hapus catatan pengeluaran terkait jika ada
+                pengeluaranHistory = pengeluaranHistory.filter(p => p.id !== ('BRILINK-WALLET-' + trx.id) && p.id !== ('BRILINK-CASH-' + trx.id));
+                catatMutasiSiklus('OMZET_BATAL', admin);
+
+            // ==========================================
+            // PILAR 2: DIGITAL PULSA & PPOB (isPPOB)
+            // ==========================================
+            } else if (trx.isPPOB) {
+                const vendorWallet = trx.ppobVendor;
+                const modalHPP = trx.ppobModal || 0;
+                const jual = trx.total || 0;
+                const dompetPenerima = trx.ppobDompetPenerima;
+
+                // Refund/add base capital (HPP/Modal) back to specific vendor wallet
+                if (vendorWallet && modalHPP > 0) {
+                    const saldoVendor = getWalletBalance(vendorWallet);
+                    setWalletBalance(vendorWallet, saldoVendor + modalHPP);
+                }
+
+                // Reverse customer payment received
+                if (trx.metode === 'Tunai') {
+                    const saldoLaci = getWalletBalance('Laci');
+                    setWalletBalance('Laci', saldoLaci - jual);
+                    catatMutasiSiklus('OMZET_BATAL', jual);
+                } else if (trx.metode === 'QRIS' && dompetPenerima) {
+                    const saldoPenerima = getWalletBalance(dompetPenerima);
+                    setWalletBalance(dompetPenerima, saldoPenerima - jual);
+                    catatMutasiSiklus('OMZET_BATAL', jual);
+                }
+
+            // ==========================================
+            // PILAR 3: BARANG FISIK RETAIL (AKSESORIS / OBAT)
+            // ==========================================
+            } else if (trx.isPelunasan) {
+                catatMutasiSiklus('OMZET_BATAL', trx.total || 0);
+
+                // Bangkitkan Utang Lama dari Tali Pusar
+                if (trx.idTerkait) {
+                    let idTerkaitArr = trx.idTerkait.toString().split(',');
+                    cashierHistory.forEach(t => {
+                        if (idTerkaitArr.includes(t.id.toString())) {
+                            t.statusLunas = false;
+                        }
+                    });
+                }
+                kirimNotifikasiMobile('Batal Pelunasan', `Pelunasan ${trx.pelanggan || ''} dibatalkan. Utang aktif kembali.`, 'batal', trx.total || 0);
+
+            } else {
+                // Penjualan Retail Biasa
+                const jual = trx.total || 0;
+                if (trx.metode === 'Tunai') {
+                    const saldoLaci = getWalletBalance('Laci');
+                    setWalletBalance('Laci', saldoLaci - jual);
+                    catatMutasiSiklus('OMZET_BATAL', jual);
+                } else if (trx.metode === 'QRIS') {
+                    // Jika QRIS retail, potong QRIS / Bank jika terkonfigurasi
+                    let qrWallet = 'Bank BRI';
+                    const activeW = getActiveWallets();
+                    if (!activeW.some(w => w.name === qrWallet)) qrWallet = activeW[0] ? activeW[0].name : 'Laci';
+                    const saldoQR = getWalletBalance(qrWallet);
+                    setWalletBalance(qrWallet, saldoQR - jual);
+                    catatMutasiSiklus('OMZET_BATAL', jual);
+                }
+
+                // Inventory Sync: Pulihkan stok item ke etalase & gudang
+                if (trx.detailKeranjang && trx.detailKeranjang.length > 0) {
+                    trx.detailKeranjang.forEach(itemRetur => {
+                        pulihkanStokBatal(itemRetur);
+                        masterItems.forEach(m => {
+                            if (m.dnaInduk === itemRetur.dnaInduk) {
+                                m.isPernahBatal = true;
+                            }
+                        });
+                    });
+                } else {
+                    let qty = trx.item || 1;
+                    let hppRetur = Math.round(((trx.total || 0) - (trx.laba || 0)) / qty);
+                    let hppAbsolutLama = ((trx.total || 0) - (trx.laba || 0));
+                    let itemRetur = {
+                        dnaInduk: 'DNA-RETUR-OLD', nama: trx.obat, jual: Math.round((trx.total || 0) / qty),
+                        qty: qty, hppSatuan: hppRetur, hppTotalModal: hppAbsolutLama
+                    };
+                    pulihkanStokBatal(itemRetur);
+                }
             }
         });
 
-        // [CELAH 1] LOGIKA BATAL KHUSUS PELUNASAN GABUNGAN
-        if (sampelTrx.isPelunasan) {
-            catatMutasiSiklus('OMZET_BATAL', totalUangBatal);
-
-            // Bangkitkan Utang Lama dari Tali Pusar (Sistem Asisten)
-            if (idTerkaitGabungan.length > 0) {                cashierHistory.forEach(t => {
-                    if(idTerkaitGabungan.includes(t.id.toString())) {
-                        t.statusLunas = false; // Kembalikan statusnya ke belum lunas
-                    }
-                });
-            }
-            kirimNotifikasiMobile('Batal Pelunasan', `Pelunasan ${sampelTrx.pelanggan || ''} dibatalkan. Utang aktif kembali.`, 'batal', totalUangBatal);
-
-        } else {
-
-            // BATAL TRANSAKSI PENJUALAN BIASA (TUNAI/QRIS/DEBT UTAMA)
-            if (sampelTrx.metode !== 'Debt') {
-                catatMutasiSiklus('OMZET_BATAL', totalUangBatal);
-            }
-
-            // Kembalikan Stok ke Etalase Menggunakan Mesin Sentral
-            kumpulanItemRetur.forEach(itemRetur => {
-                pulihkanStokBatal(itemRetur);
-                // [MODIFIKASI] Tanam stempel gaib agar tombol hapus tetap terkunci abu-abu
-                masterItems.forEach(m => {
-                    if (m.dnaInduk === itemRetur.dnaInduk) {
-                        m.isPernahBatal = true;
-                    }
-                });
-            });
-        } // <--- INI ADALAH KURUNG KURAWAL YANG HILANG!
-        // Eksekusi Pemusnahan ID dari History
-        cashierHistory = cashierHistory.filter(t => !arrIds.includes(t.id));
-        // SIMPAN SEMUA MEMORI TERMASUK MASTER ITEMS
+        // SIMPAN SEMUA MEMORI TERMASUK MASTER ITEMS & PENGELUARAN
         saveApotekDB('antoncell_masterItems', masterItems);
         saveApotekDB('antoncell_etalaseItems', etalaseItems);
         saveApotekDB('antoncell_cashierHistory', cashierHistory);
+        saveApotekDB('antoncell_pengeluaranHistory', pengeluaranHistory);
         saveApotekDB('antoncell_siklusAktif', siklusAktif);
 
-        renderRiwayatMobile(); renderBerandaMobile();
+        // Global Dashboard Synchronization
+        renderSaldoDashboard();
+        renderBerandaMobile();
+        renderRiwayatMobile();
         if(!document.getElementById('layar-piutang').classList.contains('hidden')) renderPiutangMobile();
         if(!document.getElementById('layar-etalase').classList.contains('hidden')) renderEtalaseMobile();
         if(!document.getElementById('layar-gudang').classList.contains('hidden')) {
             let inputCari = document.getElementById('cariGudangMobile');
             renderGudangMobile(inputCari ? inputCari.value : '');
         }
+
         triggerHaptic([100,50,100]);
-        alert(sampelTrx.isPelunasan ? "✅ Batal Pelunasan Berhasil! Utang dihidupkan kembali secara presisi (Stok tidak disentuh)." : "✅ Transaksi Dibatalkan. Stok setiap item diretur ke Etalase.");
+        alert(sampelTrx.isPelunasan ? "✅ Batal Pelunasan Berhasil! Utang dihidupkan kembali secara presisi (Stok tidak disentuh)." : "✅ Transaksi Berhasil Dibatalkan. Saldo dan stok telah disinkronkan kembali.");
     }
 }
 
@@ -8363,6 +8487,7 @@ function KalkulatorMasterObat() {
 
     // FASE 3: PANEN BUAH TERJUAL DARI RIWAYAT
     cashierHistory.forEach(trx => {
+        if (trx.isCancelled) return;
         if (trx.isPelunasan) return; // SENSOR SILUMAN: Utang tidak boleh merusak fisik
 
         let isShiftIni = (trx.id >= waktuMulai);
@@ -8844,6 +8969,15 @@ function getLabaBRILink() {
 function addLabaBRILink(amount) {
     const current = getLabaBRILink();
     const nextVal = current + (parseInt(amount, 10) || 0);
+    localStorage.setItem(getLabaBRILinkKey(), nextVal.toString());
+    const badge = document.getElementById('berandaLabaBRILink');
+    if (badge) badge.textContent = rupiah(nextVal);
+    return nextVal;
+}
+
+function deductLabaBRILink(amount) {
+    const current = getLabaBRILink();
+    const nextVal = Math.max(0, current - (parseInt(amount, 10) || 0));
     localStorage.setItem(getLabaBRILinkKey(), nextVal.toString());
     const badge = document.getElementById('berandaLabaBRILink');
     if (badge) badge.textContent = rupiah(nextVal);
