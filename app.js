@@ -9632,29 +9632,18 @@ function hitungOtomatisBRILink() {
                 }
             } else {
                 // SCENARIO A: Target is Normal Wallet (BRI, SeaBank, GoPay, or DANA)
+                // All transfer admins are inherently 'Bayar di Luar' (paid in cash by customer):
+                // Laci Fisik (Cash Drawer) = + (Nominal + Biaya Admin)
+                // Selected Digital Wallet = - Nominal
+                // Laba = + Biaya Admin
                 if (rowFisik) rowFisik.classList.remove('hidden');
                 if (rowBank) rowBank.classList.remove('hidden');
                 const labelBank = rowBank.querySelector('.text-slate-300');
                 if (labelBank) labelBank.textContent = `💳 Saldo ${sumberDana || 'Digital'}:`;
 
-                if (tipePotongAdmin === 'dalam') {
-                    // Bayar di Dalam:
-                    // Laci Fisik = + N
-                    // Selected Digital Wallet = - (N - A)
-                    // Laba = + A
-                    const deduction = nominal - admin;
-                    previewFisik.textContent = "+ " + rupiah(nominal);
-                    previewBank.textContent = "- " + rupiah(deduction);
-                    previewLaba.textContent = "+ " + rupiah(admin);
-                } else {
-                    // Bayar di Luar:
-                    // Laci Fisik = + (N + A)
-                    // Selected Digital Wallet = - N
-                    // Laba = + A
-                    previewFisik.textContent = "+ " + rupiah(nominal + admin);
-                    previewBank.textContent = "- " + rupiah(nominal);
-                    previewLaba.textContent = "+ " + rupiah(admin);
-                }
+                previewFisik.textContent = "+ " + rupiah(nominal + admin);
+                previewBank.textContent = "- " + rupiah(nominal);
+                previewLaba.textContent = "+ " + rupiah(admin);
             }
         } else {
             // TARIK TUNAI mode
@@ -9705,12 +9694,14 @@ function prosesTransaksiBRILink() {
 
     let totalNominalHalaman = 0;
     let labaTrx = admin;
+    let sumberDana = '';
+    let tipePotongAdmin = 'dalam';
 
     if (mode === 'TRANSFER') {
         // Mode TRANSFER / TOP UP:
         // Sumber Dana Anton Cell:
         const sumberDanaElem = document.getElementById('inputBRILinkSumberDana');
-        const sumberDana = sumberDanaElem ? sumberDanaElem.value : 'Bank BRI';
+        sumberDana = sumberDanaElem ? sumberDanaElem.value : 'Bank BRI';
 
         // Dual input Rekening Pelanggan
         const bankPelangganElem = document.getElementById('inputBRILinkBankPelanggan');
@@ -9727,7 +9718,7 @@ function prosesTransaksiBRILink() {
         if (catatan) namaLayanan += ` (${catatan})`;
 
         // Tipe Potongan Admin for Transfer is strictly Bayar di Luar (customer pays nominal + admin cash)
-        const tipePotongAdmin = 'luar';
+        tipePotongAdmin = 'luar';
 
         if (sumberDana === 'ATM Pelanggan') {
             const saldoLaci = getWalletBalance('Laci');
@@ -9754,7 +9745,9 @@ function prosesTransaksiBRILink() {
                 brilinkTipePotongAdmin: 'luar',
                 brilinkNominal: nominal,
                 brilinkAdmin: admin,
-                brilinkRekening: rekening
+                brilinkRekening: rekening,
+                brilinkCatatan: catatan,
+                catatan: catatan
             });
         } else {
             // Anton Cell Wallet -> Customer Bank/E-Wallet
@@ -9791,7 +9784,9 @@ function prosesTransaksiBRILink() {
                 brilinkTipePotongAdmin: 'luar',
                 brilinkNominal: nominal,
                 brilinkAdmin: admin,
-                brilinkRekening: rekening
+                brilinkRekening: rekening,
+                brilinkCatatan: catatan,
+                catatan: catatan
             });
 
             pengeluaranHistory.unshift({
@@ -9823,7 +9818,7 @@ function prosesTransaksiBRILink() {
 
         // Tipe Potongan Admin (Dalam / Luar)
         const potongAdminElem = document.querySelector('input[name="brilinkPotongAdmin"]:checked');
-        const tipePotongAdmin = potongAdminElem ? potongAdminElem.value : 'dalam';
+        tipePotongAdmin = potongAdminElem ? potongAdminElem.value : 'dalam';
 
         let namaLayanan = `BRILink Tarik Tunai: ${dariBank} -> ${akunToko}`;
         if (catatan) namaLayanan += ` (${catatan})`;
@@ -9868,7 +9863,9 @@ function prosesTransaksiBRILink() {
                 brilinkTipePotongAdmin: 'luar',
                 brilinkNominal: nominal,
                 brilinkAdmin: admin,
-                brilinkRekening: rekening
+                brilinkRekening: rekening,
+                brilinkCatatan: catatan,
+                catatan: catatan
             });
 
             pengeluaranHistory.unshift({
@@ -9916,7 +9913,9 @@ function prosesTransaksiBRILink() {
                 brilinkTipePotongAdmin: 'dalam',
                 brilinkNominal: nominal,
                 brilinkAdmin: admin,
-                brilinkRekening: rekening
+                brilinkRekening: rekening,
+                brilinkCatatan: catatan,
+                catatan: catatan
             });
 
             pengeluaranHistory.unshift({
@@ -10429,7 +10428,26 @@ function renderLabaBRILink() {
 
         const redBatalBadge = isCancelled ? `<span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm mr-1"><i class="fa-solid fa-ban mr-1"></i>BATAL</span>` : '';
 
-        // Dynamic 5 Rows based on Service Type:
+        // Optional Note (Catatan)
+        let catatanTeks = (t.brilinkCatatan || t.catatan || '').trim();
+        if (!catatanTeks && t.obat) {
+            const cleanObat = t.obat.replace(/\s*\[Fee Admin Tunai Laci\]\s*$/, '').trim();
+            const matchNote = cleanObat.match(/\(([^)]+)\)$/);
+            if (matchNote) {
+                const candidate = matchNote[1].trim();
+                if (candidate && candidate !== noRekPelanggan && candidate !== bankPelanggan) {
+                    catatanTeks = candidate;
+                }
+            }
+        }
+
+        const rowCatatanHtml = catatanTeks ? `
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Catatan:</span>
+                    <span class="font-bold text-slate-800 truncate max-w-[200px]">${catatanTeks}</span>
+                </div>` : '';
+
+        // Dynamic Rows based on Service Type:
         // TARIK TUNAI vs (TRANSFER or TOP UP E-WALLET)
         let rowsHtml = '';
         if (jenisLayanan === 'Tarik Tunai') {
@@ -10454,7 +10472,7 @@ function renderLabaBRILink() {
                 <div class="flex justify-between items-center">
                     <span class="text-slate-500 font-medium">Nominal Transaksi:</span>
                     <span class="font-bold text-slate-800 ${strikeClass}">${rupiah(nominal)}</span>
-                </div>
+                </div>${rowCatatanHtml}
             `;
         } else {
             // TRANSFER or TOP UP E-WALLET
@@ -10479,7 +10497,7 @@ function renderLabaBRILink() {
                 <div class="flex justify-between items-center">
                     <span class="text-slate-500 font-medium">Nominal Transaksi:</span>
                     <span class="font-bold text-slate-800 ${strikeClass}">${rupiah(nominal)}</span>
-                </div>
+                </div>${rowCatatanHtml}
             `;
         }
 
