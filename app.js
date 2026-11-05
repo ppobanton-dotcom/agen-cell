@@ -4222,6 +4222,8 @@ function prosesBayarMobile() {
     saveApotekDB('antoncell_cashierHistory', cashierHistory);
     saveApotekDB('antoncell_siklusAktif', siklusAktif);
 
+    const transaksiRetailBaru = cashierHistory[0];
+
     // [PENAWAR BUG DOUBLE-CHECKOUT] KOSONGKAN KERANJANG SEKETIKA!
     keranjangKasirMobile = [];
     renderKeranjangMobile();
@@ -4232,7 +4234,25 @@ function prosesBayarMobile() {
     if(!document.getElementById('layar-gudang').classList.contains('hidden')) renderGudangMobile(document.getElementById('cariGudangMobile').value);
     if(!document.getElementById('layar-etalase').classList.contains('hidden')) renderEtalaseMobile();
     triggerHaptic([100, 50, 100]);
-    alert(`✅ Transaksi ${metode} Berhasil! Omzet telah masuk ke Beranda.`);
+
+    const summaryRetailHtml = `
+        <div class="flex justify-between items-center text-slate-500">
+            <span>Kategori:</span>
+            <span class="font-bold text-slate-800">Aksesoris & Retail</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-500">
+            <span>Jumlah Item:</span>
+            <span class="font-bold text-slate-800">${totalItem} item</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-500">
+            <span>Metode Bayar:</span>
+            <span class="font-bold text-blue-600">${metode}</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+            <span class="font-bold text-slate-700">Total Belanja:</span>
+            <span class="font-black text-emerald-600 text-sm">${rupiah(totalBelanja)}</span>
+        </div>`;
+    tampilkanModalSuksesTransaksi(transaksiRetailBaru, summaryRetailHtml, "Penjualan Retail Berhasil!", "Transaksi kasir fisik telah tercatat di sistem.");
 
     // Inject ke Supabase Queue jika Offline
     if (!navigator.onLine) {
@@ -5652,63 +5672,291 @@ function pilihKategoriPengeluaran(nilaiKode, teksTampil) {
     toggleDropdownPengeluaran();
 }
 
+
 // ==========================================
-// 19. MESIN BLUETOOTH PRINTER (ESC/POS)
+// 19. MESIN THERMAL PRINTER (RAWBT & ESC/POS)
 // ==========================================
 let printerApotekTerhubung = null;
 
+// Core Print Engine: 58mm Thermal Printer (32 columns width) for RawBT App
+function cetakStrukRawBT(transactionObj) {
+    if (!transactionObj) {
+        alert("⚠️ Data transaksi tidak valid untuk dicetak!");
+        return;
+    }
+
+    const t = transactionObj;
+    const storeName = (profilApotek && profilApotek.nama ? profilApotek.nama : "ANTON CELL").toUpperCase();
+    const storeAlamat = (profilApotek && profilApotek.alamat ? profilApotek.alamat : "Area Taman Hijau, Baubau");
+    const storeTelp = (profilApotek && profilApotek.telepon ? profilApotek.telepon : "");
+
+    // String formatting helpers for 32 chars width
+    const padCenter = (str, width = 32) => {
+        let text = String(str || "").trim();
+        if (text.length > width) text = text.substring(0, width);
+        let pad = Math.floor((width - text.length) / 2);
+        return " ".repeat(Math.max(0, pad)) + text;
+    };
+
+    const row2Col = (left, right, width = 32) => {
+        let l = String(left || "");
+        let r = String(right || "");
+        let available = width - r.length - 1;
+        if (l.length > available) {
+            l = l.substring(0, Math.max(0, available));
+        }
+        let space = width - l.length - r.length;
+        return l + " ".repeat(Math.max(1, space)) + r;
+    };
+
+    const wrapText = (text, width = 32) => {
+        let lines = [];
+        let cur = String(text || "").trim();
+        while (cur.length > width) {
+            let chunk = cur.substring(0, width);
+            let lastSpace = chunk.lastIndexOf(" ");
+            if (lastSpace > 10) {
+                lines.push(chunk.substring(0, lastSpace));
+                cur = cur.substring(lastSpace + 1).trim();
+            } else {
+                lines.push(chunk);
+                cur = cur.substring(width).trim();
+            }
+        }
+        if (cur.length > 0) lines.push(cur);
+        return lines;
+    };
+
+    const fmtRp = (num) => "Rp " + Number(num || 0).toLocaleString("id-ID");
+
+    let lines = [];
+
+    // Header standard
+    lines.push(padCenter(storeName));
+    if (storeAlamat) {
+        let almLines = wrapText(storeAlamat, 32);
+        almLines.forEach(al => lines.push(padCenter(al)));
+    }
+    if (storeTelp) {
+        lines.push(padCenter("Telp: " + storeTelp));
+    }
+    lines.push("================================");
+    lines.push(row2Col(`Waktu: ${t.tanggal || getTanggalLokal()}`, `${t.waktu || ""}`));
+    lines.push(row2Col(`Kasir: ${t.kasir || "Kasir"}`, `ID: ${String(t.id || "").slice(-6)}`));
+    lines.push("--------------------------------");
+
+    // Determine category:
+    const isBrilink = !!t.isBRILink || (t.obat && t.obat.toLowerCase().includes("brilink"));
+    const isPpob = !!t.isPPOB || (t.obat && (
+        t.obat.toLowerCase().startsWith("[pulsa]") ||
+        t.obat.toLowerCase().startsWith("[paket data]") ||
+        t.obat.toLowerCase().startsWith("[pln]") ||
+        t.obat.toLowerCase().startsWith("[pdam]") ||
+        t.obat.toLowerCase().startsWith("[bpjs]") ||
+        t.obat.toLowerCase().startsWith("[pegadaian]")
+    ));
+
+    if (isBrilink) {
+        const jenisLayanan = (typeof getBRILinkServiceType === "function") ? getBRILinkServiceType(t) : (t.brilinkServiceType || (t.brilinkMode === "TARIK" ? "Tarik Tunai" : "Transfer"));
+        const isTarik = (jenisLayanan === "Tarik Tunai" || (t.brilinkMode || "").toUpperCase() === "TARIK");
+
+        if (!isTarik) {
+            // A. BRILink - TRANSFER / TOP UP
+            lines.push(padCenter("BUKTI TRANSAKSI BRILINK"));
+            lines.push(padCenter(`JENIS: ${jenisLayanan.toUpperCase()}`));
+            lines.push("--------------------------------");
+
+            const bankPelanggan = t.brilinkBankPelanggan || (t.brilinkRekening ? t.brilinkRekening.split("(")[0].trim() : "-");
+            const noRekPelanggan = t.brilinkNoRekPelanggan || (t.brilinkRekening && t.brilinkRekening.includes("(") ? (t.brilinkRekening.split("(")[1] || "").replace(")", "").trim() : "-");
+            const namaPelanggan = t.pelanggan || "UMUM";
+            const nominal = t.brilinkNominal !== undefined ? t.brilinkNominal : (t.total || 0);
+            const admin = t.brilinkAdmin !== undefined ? t.brilinkAdmin : (t.laba || 0);
+            const totalBayar = nominal + admin;
+
+            lines.push(row2Col("BANK/E-WALLET", bankPelanggan));
+            lines.push(row2Col("NO REK/AKUN", noRekPelanggan));
+            lines.push(row2Col("NAMA PELANGGAN", namaPelanggan));
+            lines.push(row2Col("NOMINAL", fmtRp(nominal)));
+            lines.push(row2Col("ADMIN", fmtRp(admin)));
+            lines.push("--------------------------------");
+            lines.push(row2Col("TOTAL", fmtRp(totalBayar)));
+
+            if (t.brilinkCatatan || t.catatan) {
+                let note = (t.brilinkCatatan || t.catatan || "").trim();
+                if (note) lines.push(row2Col("Catatan", note));
+            }
+        } else {
+            // B. BRILink - TARIK TUNAI
+            lines.push(padCenter("BUKTI TARIK TUNAI"));
+            lines.push("--------------------------------");
+
+            const namaPelanggan = t.pelanggan || "UMUM";
+            const dariAkun = t.brilinkBankPelanggan || (t.brilinkRekening ? t.brilinkRekening.split("(")[0].trim() : "Bank Pelanggan");
+            const noRekPelanggan = t.brilinkNoRekPelanggan || (t.brilinkRekening && t.brilinkRekening.includes("(") ? (t.brilinkRekening.split("(")[1] || "").replace(")", "").trim() : "");
+            const keAkun = t.brilinkAkunToko || (t.metode || "Bank BRI");
+            const nominal = t.brilinkNominal !== undefined ? t.brilinkNominal : (t.total || 0);
+            const admin = t.brilinkAdmin !== undefined ? t.brilinkAdmin : (t.laba || 0);
+            const tipePotong = (t.brilinkTipePotongAdmin || "dalam").toLowerCase();
+            const badgeAdmin = tipePotong === "luar" ? "Bayar di Luar" : "Bayar di Dalam";
+
+            // Tunai Diserahkan
+            const tunaiDiserahkan = (tipePotong === "dalam") ? Math.max(0, nominal - admin) : nominal;
+
+            lines.push(row2Col("PELANGGAN", namaPelanggan));
+            lines.push(row2Col("DARI AKUN", dariAkun + (noRekPelanggan ? ` (${noRekPelanggan})` : "")));
+            lines.push(row2Col("KE AKUN", keAkun));
+            lines.push(row2Col("NOMINAL TARIK", fmtRp(nominal)));
+            lines.push(row2Col(`ADMIN (${badgeAdmin})`, fmtRp(admin)));
+            lines.push("--------------------------------");
+            lines.push(row2Col("TUNAI DISERAHKAN", fmtRp(tunaiDiserahkan)));
+
+            if (t.brilinkCatatan || t.catatan) {
+                let note = (t.brilinkCatatan || t.catatan || "").trim();
+                if (note) lines.push(row2Col("Catatan", note));
+            }
+        }
+    } else if (isPpob) {
+        // C. PULSA & PPOB
+        lines.push(padCenter("BUKTI PEMBELIAN PULSA & PPOB"));
+        lines.push("--------------------------------");
+
+        let namaProduk = t.obat || "-";
+        let targetId = t.pelanggan || "-";
+        if (t.detailKeranjang && t.detailKeranjang.length > 0) {
+            const first = t.detailKeranjang[0];
+            namaProduk = first.nama || t.obat;
+            targetId = first.varian || t.pelanggan || "-";
+        } else {
+            const m = (t.obat || "").match(/\(([^)]+)\)/);
+            if (m) targetId = m[1];
+        }
+
+        const hargaJual = t.total || 0;
+        const snToken = t.ppobSn || t.sn || t.token || t.catatan || "";
+
+        lines.push(row2Col("PRODUK", namaProduk));
+        lines.push(row2Col("NO/ID TUJUAN", targetId));
+        lines.push(row2Col("METODE", (t.metode || "TUNAI").toUpperCase()));
+        lines.push("--------------------------------");
+        lines.push(row2Col("HARGA", fmtRp(hargaJual)));
+
+        if (snToken) {
+            lines.push("--------------------------------");
+            lines.push(row2Col("SN / TOKEN", snToken));
+        }
+    } else {
+        // D. AKSESORIS / RITEL
+        lines.push(padCenter("BUKTI PEMBELIAN RETAIL"));
+        lines.push("--------------------------------");
+
+        let items = [];
+        if (t.detailKeranjang && Array.isArray(t.detailKeranjang) && t.detailKeranjang.length > 0) {
+            items = t.detailKeranjang;
+        } else {
+            items = [{
+                nama: t.obat || "Barang Retail",
+                qty: t.item || 1,
+                jual: t.total || 0
+            }];
+        }
+
+        items.forEach(it => {
+            const itemNama = `${it.nama || "-"}${it.varian ? " " + it.varian : ""}`;
+            const qty = it.qty || 1;
+            const price = it.jual || 0;
+            const subtotal = qty * price;
+
+            wrapText(itemNama, 32).forEach(l => lines.push(l));
+            lines.push(row2Col(`  ${qty} x ${price.toLocaleString("id-ID")}`, fmtRp(subtotal)));
+        });
+
+        lines.push("--------------------------------");
+        const total = t.total || 0;
+        const diterima = t.tunaiDiterima !== undefined ? t.tunaiDiterima : (t.bayar !== undefined ? t.bayar : total);
+        const kembalian = t.kembalian !== undefined ? t.kembalian : Math.max(0, diterima - total);
+
+        lines.push(row2Col("TOTAL", fmtRp(total)));
+        lines.push(row2Col("PEMBAYARAN", (t.metode || "TUNAI").toUpperCase()));
+        if (t.metode === "Tunai" || !t.metode) {
+            lines.push(row2Col("TUNAI DITERIMA", fmtRp(diterima)));
+            lines.push(row2Col("KEMBALIAN", fmtRp(kembalian)));
+        }
+    }
+
+    // Standard store footer
+    lines.push("================================");
+    lines.push(padCenter("Terima Kasih"));
+    lines.push(padCenter("Simpan Struk Ini"));
+    lines.push("\n\n\n");
+
+    const receiptText = lines.join("\n");
+    const rawBtUri = `intent:${encodeURIComponent(receiptText)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+
+    // Trigger Android Intent for RawBT app
+    try {
+        window.location.href = rawBtUri;
+    } catch (e) {
+        console.error("Gagal memanggil RawBT:", e);
+        alert("⚠️ Gagal membuka aplikasi RawBT Printer!");
+    }
+}
+
+// Fallback / legacy bluetooth printer router
 async function prosesCetakStrukMobile(idTransaksi, elemenTombol) {
     const trx = cashierHistory.find(t => t.id === idTransaksi);
-    if(!trx) return alert("⚠️ Data transaksi tidak ditemukan!");
+    if (!trx) return alert("⚠️ Data transaksi tidak ditemukan!");
 
-    const posTengah = (text) => { let str = text.substring(0, 32); let pad = Math.floor((32 - str.length) / 2); return " ".repeat(pad > 0 ? pad : 0) + str + " ".repeat(pad > 0 ? pad : 0) + "\n"; };
+    // Route directly to RawBT printer engine
+    cetakStrukRawBT(trx);
+}
 
-    let struk = "";
-    struk += posTengah(profilApotek.nama.toUpperCase());
-    struk += posTengah((profilApotek.alamat || '').substring(0,32));
-    if(profilApotek.telepon) struk += posTengah("Telp: " + profilApotek.telepon);
-    struk += "================================\n";
-    struk += `Tgl   : ${trx.tanggal} ${trx.waktu}\n`;
-    struk += `Kasir : ${trx.kasir}\n`;
-    struk += "--------------------------------\n";
-    struk += `${trx.obat}\n`;
-    struk += `${trx.item} Item        Rp ${trx.total.toLocaleString('id-ID')}\n`;
-    struk += "--------------------------------\n";
-    struk += `TOTAL           : Rp ${trx.total.toLocaleString('id-ID')}\n`;
-    struk += `PEMBAYARAN      : ${trx.metode.toUpperCase()}\n`;
-    struk += "================================\n";
-    struk += "  Terima Kasih & Semoga Sehat!  \n\n\n";
+// ==========================================
+// AUTO-PROMPT MODAL SUKSES TRANSAKSI
+// ==========================================
+let transaksiSuksesAktif = null;
 
-    const encoder = new TextEncoder(); let payloadAkhir = encoder.encode(struk);
+function tampilkanModalSuksesTransaksi(transactionObj, summaryHtml, customTitle, customSubtitle) {
+    transaksiSuksesAktif = transactionObj;
 
-    try {
-        const teksAsli = elemenTombol.innerHTML; elemenTombol.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>...';
+    const modal = document.getElementById("modalSuksesTransaksi");
+    const ringkasan = document.getElementById("ringkasanSuksesTransaksi");
+    const judul = document.getElementById("judulSuksesTransaksi");
+    const subjudul = document.getElementById("subjudulSuksesTransaksi");
+    const btnCetak = document.getElementById("btnCetakStrukSukses");
 
-        if (!printerApotekTerhubung) {
-            printerApotekTerhubung = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'] });
+    if (!modal) {
+        if (confirm("Transaksi Berhasil! Apakah Anda ingin mencetak struk via RawBT?")) {
+            cetakStrukRawBT(transactionObj);
         }
-
-        const server = await printerApotekTerhubung.gatt.connect(); const services = await server.getPrimaryServices();
-        let writeCharacteristic = null;
-
-        for (const service of services) {
-            const characteristics = await service.getCharacteristics();
-            for (const char of characteristics) { if (char.properties.write || char.properties.writeWithoutResponse) { writeCharacteristic = char; break; } }
-            if (writeCharacteristic) break;
-        }
-
-        if (!writeCharacteristic) throw new Error("Printer tidak mendukung cetak");
-
-        const CHUNK_SIZE = 100;
-        for (let i = 0; i < payloadAkhir.length; i += CHUNK_SIZE) {
-            let potonganData = payloadAkhir.slice(i, i + CHUNK_SIZE); await writeCharacteristic.writeValue(potonganData); await new Promise(resolve => setTimeout(resolve, 50));
-        }
-
-        elemenTombol.innerHTML = teksAsli; alert("✅ Cetak Berhasil! Struk dikeluarkan oleh printer.");
-    } catch(error) {
-        console.log("Error Printer:", error); printerApotekTerhubung = null; elemenTombol.innerHTML = '<i class="fa-solid fa-print"></i> Cetak';
-        alert("⚠️ Gagal Mencetak! Pastikan Bluetooth HP menyala, lokasi diizinkan, dan Printer Thermal hidup.");
+        return;
     }
+
+    if (judul && customTitle) judul.textContent = customTitle;
+    if (subjudul && customSubtitle) subjudul.textContent = customSubtitle;
+    if (ringkasan && summaryHtml) ringkasan.innerHTML = summaryHtml;
+
+    if (btnCetak) {
+        btnCetak.onclick = function() {
+            if (transaksiSuksesAktif) {
+                cetakStrukRawBT(transaksiSuksesAktif);
+            }
+        };
+    }
+
+    modal.classList.remove("hidden");
+}
+
+function tutupModalSuksesTransaksi() {
+    const modal = document.getElementById("modalSuksesTransaksi");
+    if (modal) modal.classList.add("hidden");
+    transaksiSuksesAktif = null;
+}
+
+// Wrapper to reprint from history by transaction ID
+function reprintTransaksiById(idTrx) {
+    const trx = cashierHistory.find(t => t.id === idTrx || String(t.id) === String(idTrx));
+    if (!trx) return alert("⚠️ Transaksi tidak ditemukan di riwayat!");
+    cetakStrukRawBT(trx);
 }
 
 // ==========================================
@@ -9938,17 +10186,71 @@ function prosesTransaksiBRILink() {
     saveApotekDB('antoncell_pengeluaranHistory', pengeluaranHistory);
     saveApotekDB('antoncell_siklusAktif', siklusAktif);
 
+    const transaksiBRILinkBaru = cashierHistory[0];
+
     tutupModalMobile('modalBRILink');
     renderBerandaMobile();
     if(!document.getElementById('layar-riwayat').classList.contains('hidden')) renderRiwayatMobile();
 
     triggerHaptic([100, 50, 100]);
-    if (mode === 'TRANSFER' && sumberDana === 'ATM Pelanggan') {
-        const tujuanFee = tipePotongAdmin === 'dalam' ? (document.getElementById('inputBRILinkDompetFee') ? document.getElementById('inputBRILinkDompetFee').value : 'Digital') : 'Laci Fisik';
-        alert(`✅ Transaksi Transfer (ATM Pelanggan) Sukses!\n\nDouble-Entry Berhasil:\n- Nominal Transfer Rp ${nominal.toLocaleString('id-ID')} tidak mempengaruhi aset toko.\n- Fee Admin Rp ${admin.toLocaleString('id-ID')} masuk ke ${tujuanFee} dicatat sebagai Laba.`);
+
+    let summaryBRILinkHtml = '';
+    const jenisLayananJudul = mode === 'TRANSFER' ? 'Transfer / Top Up' : 'Tarik Tunai';
+
+    if (mode === 'TRANSFER') {
+        summaryBRILinkHtml = `
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Layanan:</span>
+                <span class="font-bold text-blue-600">BRILink Transfer / Top Up</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Pelanggan:</span>
+                <span class="font-bold text-slate-800 truncate max-w-[170px]">${pelanggan}</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Nominal:</span>
+                <span class="font-bold text-slate-800">${rupiah(nominal)}</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Admin Toko:</span>
+                <span class="font-bold text-emerald-600">+${rupiah(admin)}</span>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                <span class="font-bold text-slate-700">Total Diterima Kasir:</span>
+                <span class="font-black text-blue-700 text-sm">${rupiah(nominal + admin)}</span>
+            </div>`;
     } else {
-        alert(`✅ Transaksi ${mode === 'TRANSFER' ? 'Transfer' : 'Tarik Tunai'} BRILink Sukses!\n\nDouble-Entry Berhasil:\n- Fee Admin Rp ${admin.toLocaleString('id-ID')} dicatat sebagai Laba.\n- Saldo Laci & EDC/Bank telah diperbarui secara otomatis.`);
+        const tipePotongLabel = tipePotongAdmin === 'luar' ? 'Bayar di Luar' : 'Bayar di Dalam';
+        const tunaiDiserahkan = (tipePotongAdmin === 'dalam') ? Math.max(0, nominal - admin) : nominal;
+        summaryBRILinkHtml = `
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Layanan:</span>
+                <span class="font-bold text-amber-600">BRILink Tarik Tunai</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Pelanggan:</span>
+                <span class="font-bold text-slate-800 truncate max-w-[170px]">${pelanggan}</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Nominal Tarik:</span>
+                <span class="font-bold text-slate-800">${rupiah(nominal)}</span>
+            </div>
+            <div class="flex justify-between items-center text-slate-500">
+                <span>Admin (${tipePotongLabel}):</span>
+                <span class="font-bold text-emerald-600">+${rupiah(admin)}</span>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                <span class="font-bold text-slate-700">Tunai Diserahkan:</span>
+                <span class="font-black text-amber-600 text-sm">${rupiah(tunaiDiserahkan)}</span>
+            </div>`;
     }
+
+    tampilkanModalSuksesTransaksi(
+        transaksiBRILinkBaru,
+        summaryBRILinkHtml,
+        `Transaksi ${jenisLayananJudul} Berhasil!`,
+        "Pencatatan double-entry aset & fee admin telah diperbarui."
+    );
 }
 
 // ==========================================
@@ -10290,6 +10592,8 @@ function prosesTransaksiPPOB() {
     saveApotekDB('antoncell_cashierHistory', cashierHistory);
     saveApotekDB('antoncell_siklusAktif', siklusAktif);
 
+    const transaksiPPOBBaru = cashierHistory[0];
+
     tutupModalMobile('modalPPOB');
     renderBerandaMobile();
     renderSaldoDashboard();
@@ -10298,16 +10602,34 @@ function prosesTransaksiPPOB() {
 
     triggerHaptic([100, 50, 100]);
 
-    let infoRouting = '';
-    if (metode === 'Tunai') {
-        infoRouting = '\nMasuk ke: Uang Laci Fisik';
-    } else if (metode === 'QRIS') {
-        infoRouting = `\nMasuk ke: ${dompetPenerima}`;
-    } else if (metode === 'Debt') {
-        infoRouting = `\nDicatat sebagai: Kasbon / Piutang (${namaPelanggan})`;
-    }
+    const summaryPPOBHtml = `
+        <div class="flex justify-between items-center text-slate-500">
+            <span>Kategori:</span>
+            <span class="font-bold text-cyan-700">${kategori}</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-500">
+            <span>Produk:</span>
+            <span class="font-bold text-slate-800 truncate max-w-[170px]">${namaProduk}</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-500">
+            <span>No. Tujuan / ID:</span>
+            <span class="font-mono font-bold text-cyan-700">${target}</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-500">
+            <span>Vendor:</span>
+            <span class="font-bold text-purple-700">${vendorWallet}</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+            <span class="font-bold text-slate-700">Harga Jual:</span>
+            <span class="font-black text-emerald-600 text-sm">${rupiah(jual)}</span>
+        </div>`;
 
-    alert(`✅ Transaksi Digital ${kategori} Sukses!\n\nProduk: ${namaProduk}\nTarget: ${target}\nVendor: ${vendorWallet} (-${rupiah(modal)})\nHarga: ${rupiah(jual)}\nLaba Bersih: ${rupiah(laba)}${infoRouting}`);
+    tampilkanModalSuksesTransaksi(
+        transaksiPPOBBaru,
+        summaryPPOBHtml,
+        `Transaksi ${kategori} Berhasil!`,
+        `Pembelian ${namaProduk} telah berhasil diproses.`
+    );
 }
 
 // ==========================================
@@ -10527,6 +10849,13 @@ function renderLabaBRILink() {
             <div class="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
                 ${rowsHtml}
             </div>
+
+            <!-- Manual Reprint Button in Profit History Card -->
+            <div class="flex justify-end pt-2 mt-2 border-t border-dashed border-slate-100">
+                <button type="button" onclick="event.stopPropagation(); reprintTransaksiById(${t.id})" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 active:scale-95 flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-print"></i> 🖨️ Cetak
+                </button>
+            </div>
         </div>`;
     }).join('');
 }
@@ -10685,6 +11014,13 @@ function renderLabaPPOB() {
                     </div>
                 </div>
             </div>
+
+            <!-- Manual Reprint Button in Profit History Card -->
+            <div class="flex justify-end pt-2 mt-2 border-t border-dashed border-slate-100">
+                <button type="button" onclick="event.stopPropagation(); reprintTransaksiById(${t.id})" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all bg-cyan-50 text-cyan-700 hover:bg-cyan-100 border border-cyan-200 active:scale-95 flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-print"></i> 🖨️ Cetak
+                </button>
+            </div>
         </div>`;
     }).join('');
 }
@@ -10804,6 +11140,13 @@ function renderLabaRetail() {
                 <div class="bg-slate-50/60 rounded-xl p-2.5 border border-slate-100">
                     ${itemsHtml}
                 </div>
+            </div>
+
+            <!-- Manual Reprint Button in Profit History Card -->
+            <div class="flex justify-end pt-2 mt-2 border-t border-dashed border-slate-100">
+                <button type="button" onclick="event.stopPropagation(); reprintTransaksiById(${t.id})" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 active:scale-95 flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-print"></i> 🖨️ Cetak
+                </button>
             </div>
         </div>`;
     }).join('');
