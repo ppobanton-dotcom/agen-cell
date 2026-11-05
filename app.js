@@ -5678,8 +5678,8 @@ function pilihKategoriPengeluaran(nilaiKode, teksTampil) {
 // ==========================================
 let printerApotekTerhubung = null;
 
-// Core Print Engine: 58mm Thermal Printer (32 columns width) for RawBT App
-function cetakStrukRawBT(transactionObj) {
+// Core Print Engine: 58mm Thermal Printer (32 columns width) via Native Web Bluetooth API
+async function cetakStrukRawBT(transactionObj) {
     if (!transactionObj) {
         alert("⚠️ Data transaksi tidak valid untuk dicetak!");
         return;
@@ -5887,17 +5887,99 @@ function cetakStrukRawBT(transactionObj) {
     lines.push("================================");
     lines.push(padCenter("Terima Kasih"));
     lines.push(padCenter("Simpan Struk Ini"));
-    lines.push("\n\n\n");
 
-    const receiptText = lines.join("\n");
-    const rawBtUri = `intent:${encodeURIComponent(receiptText)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+    // Prepend standard ESC/POS initialization command (\x1B\x40) and append newlines (\n\n\n\n) for paper feeding
+    const receiptText = "\x1B\x40" + lines.join("\n") + "\n\n\n\n";
 
-    // Trigger Android Intent for RawBT app
+    // Direct Web Bluetooth (BLE) printing
+    if (!navigator.bluetooth) {
+        alert("⚠️ Web Bluetooth tidak didukung di browser ini. Gunakan Chrome di Android/Desktop via HTTPS.");
+        return;
+    }
+
     try {
-        window.location.href = rawBtUri;
-    } catch (e) {
-        console.error("Gagal memanggil RawBT:", e);
-        alert("⚠️ Gagal membuka aplikasi RawBT Printer!");
+        // Known thermal printer BLE service UUIDs
+        const SERVICE_UUIDS = [
+            '000018f0-0000-1000-8000-00805f9b34fb',
+            'e7810a71-73ae-499d-8c15-faa9aef0c3f2'
+        ];
+
+        // Request Bluetooth device (supports RPP02 or fallback scanning)
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'RPP02' }],
+            optionalServices: SERVICE_UUIDS
+        }).catch(async (err) => {
+            // Fallback: If filter by name fails or user wants to pick any printer device
+            if (err && err.name === 'NotFoundError') {
+                throw err;
+            }
+            return await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: SERVICE_UUIDS
+            });
+        });
+
+        if (!device || !device.gatt) {
+            throw new Error("Perangkat Bluetooth tidak valid.");
+        }
+
+        printerApotekTerhubung = device;
+
+        const server = await device.gatt.connect();
+
+        // Find primary service from known UUIDs or getPrimaryServices
+        let service = null;
+        for (const uuid of SERVICE_UUIDS) {
+            try {
+                service = await server.getPrimaryService(uuid);
+                if (service) break;
+            } catch (e) {
+                // Try next UUID
+            }
+        }
+
+        if (!service) {
+            const services = await server.getPrimaryServices();
+            if (services && services.length > 0) {
+                service = services[0];
+            } else {
+                throw new Error("Layanan Bluetooth printer tidak ditemukan.");
+            }
+        }
+
+        // Get write characteristic
+        const characteristics = await service.getCharacteristics();
+        let writeChar = characteristics.find(c => c.properties.write || c.properties.writeWithoutResponse);
+        if (!writeChar && characteristics.length > 0) {
+            writeChar = characteristics[0];
+        }
+
+        if (!writeChar) {
+            throw new Error("Karakteristik Bluetooth untuk pengiriman data tidak ditemukan.");
+        }
+
+        // Encode data using TextEncoder and send in chunks of 256 bytes
+        const encoder = new TextEncoder();
+        const data = encoder.encode(receiptText);
+        const chunkSize = 256;
+
+        for (let i = 0; i < data.length; i += chunkSize) {
+            const chunk = data.slice(i, i + chunkSize);
+            if (writeChar.writeValueWithResponse) {
+                await writeChar.writeValueWithResponse(chunk).catch(async () => {
+                    await writeChar.writeValue(chunk);
+                });
+            } else {
+                await writeChar.writeValue(chunk);
+            }
+        }
+
+        console.log("Struk berhasil dikirim ke printer Bluetooth RPP02.");
+    } catch (err) {
+        console.error("Gagal mencetak via Bluetooth:", err);
+        if (err.name !== "NotFoundError") {
+            alert("⚠️ Gagal mencetak ke printer Bluetooth: " + (err.message || err));
+        }
     }
 }
 
@@ -5925,7 +6007,7 @@ function tampilkanModalSuksesTransaksi(transactionObj, summaryHtml, customTitle,
     const btnCetak = document.getElementById("btnCetakStrukSukses");
 
     if (!modal) {
-        if (confirm("Transaksi Berhasil! Apakah Anda ingin mencetak struk via RawBT?")) {
+        if (confirm("Transaksi Berhasil! Apakah Anda ingin mencetak struk via Bluetooth?")) {
             cetakStrukRawBT(transactionObj);
         }
         return;
