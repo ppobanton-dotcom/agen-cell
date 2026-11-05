@@ -5949,29 +5949,25 @@ async function cetakStrukRawBT(transactionObj) {
 
         // Get write characteristic
         const characteristics = await service.getCharacteristics();
-        let writeChar = characteristics.find(c => c.properties.write || c.properties.writeWithoutResponse);
-        if (!writeChar && characteristics.length > 0) {
-            writeChar = characteristics[0];
+        let characteristic = characteristics.find(c => c.properties.write || c.properties.writeWithoutResponse);
+        if (!characteristic && characteristics.length > 0) {
+            characteristic = characteristics[0];
         }
 
-        if (!writeChar) {
+        if (!characteristic) {
             throw new Error("Karakteristik Bluetooth untuk pengiriman data tidak ditemukan.");
         }
 
-        // Encode data using TextEncoder and send in chunks of 256 bytes
+        // Encode the full text string into a Uint8Array
         const encoder = new TextEncoder();
         const data = encoder.encode(receiptText);
-        const chunkSize = 256;
+        const chunkSize = 30; // maximum 30 bytes per chunk
 
+        // Send each chunk sequentially with delay to prevent buffer overflow on EPPOS RPP02
         for (let i = 0; i < data.length; i += chunkSize) {
             const chunk = data.slice(i, i + chunkSize);
-            if (writeChar.writeValueWithResponse) {
-                await writeChar.writeValueWithResponse(chunk).catch(async () => {
-                    await writeChar.writeValue(chunk);
-                });
-            } else {
-                await writeChar.writeValue(chunk);
-            }
+            await characteristic.writeValue(chunk);
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
 
         console.log("Struk berhasil dikirim ke printer Bluetooth RPP02.");
