@@ -189,7 +189,7 @@ tailwind.config = {
                         <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs mb-1">
                             <i class="fa-solid fa-building-columns"></i>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">BRILink</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">LABA BRILINK</span>
                         <span class="text-sm font-black text-slate-800 mt-0.5 truncate max-w-full" id="berandaLabaBRILink">Rp 0</span>
                     </div>
 
@@ -198,7 +198,7 @@ tailwind.config = {
                         <div class="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center text-xs mb-1">
                             <i class="fa-solid fa-mobile-screen-button"></i>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Pulsa/PPOB</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">LABA PULSA</span>
                         <span class="text-sm font-black text-slate-800 mt-0.5 truncate max-w-full" id="berandaLabaPPOB">Rp 0</span>
                     </div>
 
@@ -207,7 +207,7 @@ tailwind.config = {
                         <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs mb-1">
                             <i class="fa-solid fa-shop"></i>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Aksesoris</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">LABA AKSESORIS</span>
                         <span class="text-sm font-black text-slate-800 mt-0.5 truncate max-w-full" id="berandaLabaRetail">Rp 0</span>
                     </div>
                 </div>
@@ -2011,7 +2011,7 @@ tailwind.config = {
                     <label class="block text-[10px] font-black text-slate-600 mb-2 uppercase tracking-wider">Jenis Layanan Keuangan</label>
                     <div class="grid grid-cols-2 gap-2">
                         <button type="button" id="btnBRILinkTransfer" onclick="pilihModeBRILink('TRANSFER')" class="py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-blue-700 text-white border-blue-800 shadow-sm">
-                            <i class="fa-solid fa-paper-plane"></i> Transfer / Kirim
+                            <i class="fa-solid fa-paper-plane"></i> TRANSFER/KIRIM / TOP UP
                         </button>
                         <button type="button" id="btnBRILinkTarik" onclick="pilihModeBRILink('TARIK')" class="py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200">
                             <i class="fa-solid fa-hand-holding-dollar"></i> Tarik Tunai
@@ -2021,8 +2021,9 @@ tailwind.config = {
 
                 <input type="hidden" id="inputBRILinkMode" value="TRANSFER">
 
-                <div>
-                    <label id="labelBRILinkSumberDana" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Sumber Dana</label>
+                <!-- 1. Sumber Dana / Rekening Asal -->
+                <div id="wadahSumberDanaAntonCell">
+                    <label id="labelBRILinkSumberDana" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">SUMBER DANA ANTON CELL</label>
                     <select id="inputBRILinkSumberDana" onchange="onGantiSumberDanaBRILink()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
                         <option value="Bank BRI">Bank BRI</option>
                         <option value="SeaBank">SeaBank</option>
@@ -2030,6 +2031,27 @@ tailwind.config = {
                         <option value="DANA">DANA</option>
                         <option value="ATM Pelanggan">ATM Pelanggan</option>
                     </select>
+                </div>
+
+                <!-- Dual Input: Dari Rek/Akun Pelanggan (Mode Tarik Tunai) -->
+                <div id="wadahDariRekPelanggan" class="hidden">
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">DARI REK/AKUN PELANGGAN</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <select id="inputBRILinkDariBankPelanggan" onchange="hitungOtomatisBRILink()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                            <option value="Bank BRI">Bank BRI</option>
+                            <option value="Bank BCA">Bank BCA</option>
+                            <option value="Bank Mandiri">Bank Mandiri</option>
+                            <option value="Bank BNI">Bank BNI</option>
+                            <option value="SeaBank">SeaBank</option>
+                            <option value="Bank Jago">Bank Jago</option>
+                            <option value="DANA">DANA</option>
+                            <option value="GoPay">GoPay</option>
+                            <option value="OVO">OVO</option>
+                            <option value="ShopeePay">ShopeePay</option>
+                            <option value="Lainnya">Bank/E-Wallet Lain</option>
+                        </select>
+                        <input type="text" id="inputBRILinkDariNoRekPelanggan" placeholder="No. Rek / No. HP (opsional)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                    </div>
                 </div>
 
                 <!-- Pilihan Dompet Penampung Fee Admin jika ATM Pelanggan + Bayar di Dalam -->
@@ -2046,16 +2068,39 @@ tailwind.config = {
                     <p class="text-[9px] text-blue-600/80 font-medium mt-1 pl-1">Pilih dompet toko penerima transfer fee admin dari pelanggan.</p>
                 </div>
 
+                <!-- 2. Nama Akun Pelanggan -->
                 <div>
-                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nama Pelanggan</label>
+                    <label id="labelBRILinkPelanggan" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">NAMA AKUN PELANGGAN</label>
                     <input type="text" id="inputBRILinkPelanggan" placeholder="Cth: Budi Santoso" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label id="labelBRILinkRekening" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">No. Rek / Kartu / Bank</label>
-                        <input type="text" id="inputBRILinkRekening" placeholder="BRI / BCA / Mandiri / No.Rek" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
-                        <select id="selectBRILinkAkunToko" onchange="hitungOtomatisBRILink()" class="hidden w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                <!-- 3. Tujuan Dana (Dual-Input No. Rek/Akun Pelanggan untuk Transfer ATAU Dropdown Ke Rek Anton Cell untuk Tarik) -->
+                <div>
+                    <!-- Mode Transfer: Dual input NO. REK/AKUN PELANGGAN -->
+                    <div id="wadahTujuanPelangganTransfer">
+                        <label id="labelBRILinkRekening" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">NO. REK/AKUN PELANGGAN</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <select id="inputBRILinkBankPelanggan" onchange="hitungOtomatisBRILink()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                                <option value="Bank BRI">Bank BRI</option>
+                                <option value="Bank BCA">Bank BCA</option>
+                                <option value="Bank Mandiri">Bank Mandiri</option>
+                                <option value="Bank BNI">Bank BNI</option>
+                                <option value="SeaBank">SeaBank</option>
+                                <option value="Bank Jago">Bank Jago</option>
+                                <option value="DANA">DANA</option>
+                                <option value="GoPay">GoPay</option>
+                                <option value="OVO">OVO</option>
+                                <option value="ShopeePay">ShopeePay</option>
+                                <option value="Lainnya">Bank/E-Wallet Lain</option>
+                            </select>
+                            <input type="text" id="inputBRILinkRekening" placeholder="No. Rek / No. HP (opsional)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                        </div>
+                    </div>
+
+                    <!-- Mode Tarik: Dropdown KE REK/AKUN ANTON CELL -->
+                    <div id="wadahTujuanTokoTarik" class="hidden">
+                        <label id="labelBRILinkKeToko" class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">KE REK/AKUN ANTON CELL</label>
+                        <select id="selectBRILinkAkunToko" onchange="hitungOtomatisBRILink()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
                             <option value="Bank BRI">Bank BRI</option>
                             <option value="SeaBank">SeaBank</option>
                             <option value="GoPay">GoPay</option>
@@ -2063,24 +2108,26 @@ tailwind.config = {
                             <option value="Buku Simpan">Buku Simpan</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nominal Transaksi (Rp)</label>
-                        <input type="text" inputmode="numeric" id="inputBRILinkNominal" oninput="formatAngkaRibuan(this); onInputBRILinkNominal();" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-blue-700 focus:outline-none focus:border-blue-500 shadow-inner">
-                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Biaya Admin (Rp)</label>
-                        <input type="text" inputmode="numeric" id="inputBRILinkAdmin" oninput="formatAngkaRibuan(this); onInputBRILinkAdmin();" placeholder="Rp 0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-black text-amber-700 focus:outline-none focus:border-amber-500 shadow-inner">
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Nominal Transaksi (Rp)</label>
+                        <input type="text" inputmode="numeric" id="inputBRILinkNominal" oninput="formatAngkaRibuan(this); onInputBRILinkNominal();" placeholder="Rp 0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-blue-700 focus:outline-none focus:border-blue-500 shadow-inner">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Catatan Opsional</label>
-                        <input type="text" id="inputBRILinkCatatan" placeholder="Cth: Transfer Sesama BRI" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                        <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Biaya Admin (Rp)</label>
+                        <input type="text" inputmode="numeric" id="inputBRILinkAdmin" oninput="formatAngkaRibuan(this); onInputBRILinkAdmin();" placeholder="Rp 0" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm font-black text-amber-700 focus:outline-none focus:border-amber-500 shadow-inner">
                     </div>
                 </div>
 
                 <div>
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Catatan Opsional</label>
+                    <input type="text" id="inputBRILinkCatatan" placeholder="Cth: Transfer Sesama BRI" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-inner">
+                </div>
+
+                <!-- Tipe Potongan Admin (Hanya terlihat di Mode Tarik Tunai) -->
+                <div id="wadahTipePotonganAdmin">
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Tipe Potongan Admin</label>
                     <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
                         <label class="cursor-pointer">
@@ -2863,6 +2910,15 @@ tailwind.config = {
                 <p class="text-base font-black text-emerald-600" id="totalNominalLabaBRILink">Rp 0</p>
             </div>
         </div>
+        <!-- Interactive Category Filter Tabs -->
+        <div class="px-4 sm:px-6 pt-3 pb-1 border-b border-slate-100 shrink-0">
+            <div class="flex gap-1.5 overflow-x-auto hide-scrollbar">
+                <button type="button" onclick="setFilterLabaBRILink('all')" id="tabLabaBRILink-all" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-sm shrink-0">Semua</button>
+                <button type="button" onclick="setFilterLabaBRILink('Transfer')" id="tabLabaBRILink-Transfer" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Transfer</button>
+                <button type="button" onclick="setFilterLabaBRILink('Tarik Tunai')" id="tabLabaBRILink-Tarik Tunai" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Tarik Tunai</button>
+                <button type="button" onclick="setFilterLabaBRILink('Top Up E-Wallet')" id="tabLabaBRILink-Top Up E-Wallet" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Top Up E-Wallet</button>
+            </div>
+        </div>
         <div class="p-4 sm:p-6 space-y-3 overflow-y-auto hide-scrollbar flex-1" id="daftarLabaBRILink">
             <!-- Populated dynamically via renderLabaBRILink() -->
         </div>
@@ -2892,6 +2948,16 @@ tailwind.config = {
             <div class="text-right">
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Total Laba Bersih</p>
                 <p class="text-base font-black text-emerald-600" id="totalNominalLabaPPOB">Rp 0</p>
+            </div>
+        </div>
+        <!-- Interactive Category Filter Tabs -->
+        <div class="px-4 sm:px-6 pt-3 pb-1 border-b border-slate-100 shrink-0">
+            <div class="flex gap-1.5 overflow-x-auto hide-scrollbar">
+                <button type="button" onclick="setFilterLabaPPOB('all')" id="tabLabaPPOB-all" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-cyan-700 text-white shadow-sm shrink-0">Semua</button>
+                <button type="button" onclick="setFilterLabaPPOB('Pulsa')" id="tabLabaPPOB-Pulsa" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Pulsa</button>
+                <button type="button" onclick="setFilterLabaPPOB('Paket Data')" id="tabLabaPPOB-Paket Data" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Paket Data</button>
+                <button type="button" onclick="setFilterLabaPPOB('PLN')" id="tabLabaPPOB-PLN" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">PLN</button>
+                <button type="button" onclick="setFilterLabaPPOB('Lainnya')" id="tabLabaPPOB-Lainnya" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Lainnya</button>
             </div>
         </div>
         <div class="p-4 sm:p-6 space-y-3 overflow-y-auto hide-scrollbar flex-1" id="daftarLabaPPOB">

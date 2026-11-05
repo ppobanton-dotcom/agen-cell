@@ -9479,8 +9479,15 @@ function onInputBRILinkAdmin() {
 
 function bukaModalBRILink() {
     renderDropdownsBRILink();
-    document.getElementById('inputBRILinkPelanggan').value = '';
-    document.getElementById('inputBRILinkRekening').value = '';
+    const inputPelanggan = document.getElementById('inputBRILinkPelanggan');
+    if (inputPelanggan) inputPelanggan.value = '';
+
+    const inputRekening = document.getElementById('inputBRILinkRekening');
+    if (inputRekening) inputRekening.value = '';
+
+    const inputDariNoRek = document.getElementById('inputBRILinkDariNoRekPelanggan');
+    if (inputDariNoRek) inputDariNoRek.value = '';
+
     const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
     const activeWallets = getActiveWallets();
     const defaultStoreAcc = activeWallets.some(w => w.name === 'Bank BRI') ? 'Bank BRI' : (activeWallets[0] ? activeWallets[0].name : 'Buku Simpan');
@@ -9488,14 +9495,18 @@ function bukaModalBRILink() {
         selectAkunToko.value = defaultStoreAcc;
         selectAkunToko.disabled = false;
     }
-    document.getElementById('inputBRILinkNominal').value = '';
+    const inputNominal = document.getElementById('inputBRILinkNominal');
+    if (inputNominal) inputNominal.value = '';
+
     const adminInput = document.getElementById('inputBRILinkAdmin');
     if (adminInput) {
         adminInput.value = '';
         adminInput.dataset.manualOverride = "false";
         adminInput.readOnly = false;
     }
-    document.getElementById('inputBRILinkCatatan').value = '';
+    const inputCatatan = document.getElementById('inputBRILinkCatatan');
+    if (inputCatatan) inputCatatan.value = '';
+
     const selectSumberDana = document.getElementById('inputBRILinkSumberDana');
     if (selectSumberDana) {
         selectSumberDana.value = defaultStoreAcc;
@@ -9511,27 +9522,48 @@ function pilihModeBRILink(mode) {
     const btnTransfer = document.getElementById('btnBRILinkTransfer');
     const btnTarik = document.getElementById('btnBRILinkTarik');
     const labelPreview = document.getElementById('previewBRILinkLabel');
-    const labelSumberDana = document.getElementById('labelBRILinkSumberDana');
-    const labelRekening = document.getElementById('labelBRILinkRekening');
-    const inputRekening = document.getElementById('inputBRILinkRekening');
-    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+    const labelPelanggan = document.getElementById('labelBRILinkPelanggan');
+
+    // Section Wrappers
+    const wadahSumberDanaAntonCell = document.getElementById('wadahSumberDanaAntonCell');
+    const wadahDariRekPelanggan = document.getElementById('wadahDariRekPelanggan');
+    const wadahTujuanPelangganTransfer = document.getElementById('wadahTujuanPelangganTransfer');
+    const wadahTujuanTokoTarik = document.getElementById('wadahTujuanTokoTarik');
+    const wadahTipePotonganAdmin = document.getElementById('wadahTipePotonganAdmin');
+
+    if (labelPelanggan) labelPelanggan.textContent = "NAMA AKUN PELANGGAN";
 
     if (mode === 'TRANSFER') {
-        btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-blue-700 text-white border-blue-800 shadow-sm";
-        btnTarik.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
-        if (labelPreview) labelPreview.textContent = "Transfer / Kirim Uang";
-        if (labelSumberDana) labelSumberDana.textContent = "Sumber Dana";
-        if (labelRekening) labelRekening.textContent = "No. Rek / Kartu / Bank";
-        if (inputRekening) inputRekening.classList.remove('hidden');
-        if (selectAkunToko) selectAkunToko.classList.add('hidden');
+        if (btnTransfer) btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-blue-700 text-white border-blue-800 shadow-sm";
+        if (btnTarik) btnTarik.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
+        if (labelPreview) labelPreview.textContent = "TRANSFER/TOP UP (Money Out)";
+
+        // 1. Sumber Dana: SUMBER DANA ANTON CELL
+        if (wadahSumberDanaAntonCell) wadahSumberDanaAntonCell.classList.remove('hidden');
+        if (wadahDariRekPelanggan) wadahDariRekPelanggan.classList.add('hidden');
+
+        // 2. Tujuan: NO. REK/AKUN PELANGGAN (Dual Input: Dropdown + Number)
+        if (wadahTujuanPelangganTransfer) wadahTujuanPelangganTransfer.classList.remove('hidden');
+        if (wadahTujuanTokoTarik) wadahTujuanTokoTarik.classList.add('hidden');
+
+        // 3. Tipe Potongan Admin: Sembunyikan untuk mode transfer/topup
+        if (wadahTipePotonganAdmin) wadahTipePotonganAdmin.classList.add('hidden');
+
     } else {
-        btnTarik.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-amber-600 text-white border-amber-700 shadow-sm";
-        btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
-        if (labelPreview) labelPreview.textContent = "Tarik Tunai";
-        if (labelSumberDana) labelSumberDana.textContent = "Sumber Dana Pelanggan";
-        if (labelRekening) labelRekening.textContent = "No. Rek/Akun Anton Cell";
-        if (inputRekening) inputRekening.classList.add('hidden');
-        if (selectAkunToko) selectAkunToko.classList.remove('hidden');
+        if (btnTarik) btnTarik.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-amber-600 text-white border-amber-700 shadow-sm";
+        if (btnTransfer) btnTransfer.className = "py-3 px-3 rounded-xl border font-black text-xs uppercase flex items-center justify-center gap-2 transition-all bg-slate-100 text-slate-700 border-slate-200";
+        if (labelPreview) labelPreview.textContent = "TARIK TUNAI (Money In)";
+
+        // 1. Sumber: DARI REK/AKUN PELANGGAN (Dual Input: Dropdown + Number)
+        if (wadahSumberDanaAntonCell) wadahSumberDanaAntonCell.classList.add('hidden');
+        if (wadahDariRekPelanggan) wadahDariRekPelanggan.classList.remove('hidden');
+
+        // 2. Tujuan: KE REK/AKUN ANTON CELL (Dropdown)
+        if (wadahTujuanPelangganTransfer) wadahTujuanPelangganTransfer.classList.add('hidden');
+        if (wadahTujuanTokoTarik) wadahTujuanTokoTarik.classList.remove('hidden');
+
+        // 3. Tipe Potongan Admin: Tampilkan untuk mode tarik tunai
+        if (wadahTipePotonganAdmin) wadahTipePotonganAdmin.classList.remove('hidden');
     }
     onGantiSumberDanaBRILink();
     hitungOtomatisBRILink();
@@ -9657,16 +9689,10 @@ function hitungOtomatisBRILink() {
 
 function prosesTransaksiBRILink() {
     const mode = document.getElementById('inputBRILinkMode').value;
-    const sumberDana = document.getElementById('inputBRILinkSumberDana') ? document.getElementById('inputBRILinkSumberDana').value : 'Bank BRI';
     const pelanggan = document.getElementById('inputBRILinkPelanggan').value.trim() || 'UMUM';
-    const rekening = document.getElementById('inputBRILinkRekening').value.trim() || '-';
-    const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
-    const akunToko = selectAkunToko ? selectAkunToko.value : 'Bank BRI';
     const rawNominal = document.getElementById('inputBRILinkNominal').value.replace(/\./g, '');
     const rawAdmin = document.getElementById('inputBRILinkAdmin').value.replace(/\./g, '');
     const catatan = document.getElementById('inputBRILinkCatatan').value.trim() || '';
-    const potongAdminElem = document.querySelector('input[name="brilinkPotongAdmin"]:checked');
-    const tipePotongAdmin = potongAdminElem ? potongAdminElem.value : 'dalam';
 
     const nominal = parseFloat(rawNominal) || 0;
     const admin = parseFloat(rawAdmin) || 0;
@@ -9677,187 +9703,131 @@ function prosesTransaksiBRILink() {
     const strTanggal = getTanggalLokal();
     const strWaktu = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-    let namaLayanan = mode === 'TRANSFER' ? `BRILink Transfer: ${rekening}` : `BRILink Tarik Tunai: ${akunToko}`;
-    if (catatan) namaLayanan += ` (${catatan})`;
-
     let totalNominalHalaman = 0;
     let labaTrx = admin;
 
     if (mode === 'TRANSFER') {
+        // Mode TRANSFER / TOP UP:
+        // Sumber Dana Anton Cell:
+        const sumberDanaElem = document.getElementById('inputBRILinkSumberDana');
+        const sumberDana = sumberDanaElem ? sumberDanaElem.value : 'Bank BRI';
+
+        // Dual input Rekening Pelanggan
+        const bankPelangganElem = document.getElementById('inputBRILinkBankPelanggan');
+        const bankPelanggan = bankPelangganElem ? bankPelangganElem.value : 'Bank BRI';
+        const noRekPelangganElem = document.getElementById('inputBRILinkRekening');
+        const noRekPelanggan = noRekPelangganElem ? noRekPelangganElem.value.trim() : '';
+        const rekening = noRekPelanggan ? `${bankPelanggan} (${noRekPelanggan})` : bankPelanggan;
+
+        const eWallets = ['dana', 'gopay', 'ovo', 'shopeepay', 'linkaja'];
+        const isTopUp = eWallets.some(ew => bankPelanggan.toLowerCase().includes(ew));
+        const serviceCategory = isTopUp ? 'Top Up E-Wallet' : 'Transfer';
+
+        let namaLayanan = `BRILink ${serviceCategory}: ${rekening}`;
+        if (catatan) namaLayanan += ` (${catatan})`;
+
+        // Tipe Potongan Admin for Transfer is strictly Bayar di Luar (customer pays nominal + admin cash)
+        const tipePotongAdmin = 'luar';
+
         if (sumberDana === 'ATM Pelanggan') {
-            // SCENARIO B: Target is "ATM Pelanggan"
-            if (tipePotongAdmin === 'dalam') {
-                // "Bayar di Dalam" (Paid Inside):
-                // Laci Fisik = 0 (No change)
-                // Digital Wallet (Dompet Penampung) = + A
-                // Laba = + A
-                const dompetFeeElem = document.getElementById('inputBRILinkDompetFee');
-                const dompetFee = dompetFeeElem ? dompetFeeElem.value : 'Bank BRI';
+            const saldoLaci = getWalletBalance('Laci');
+            setWalletBalance('Laci', saldoLaci + admin);
 
-                if (!dompetFee) {
-                    return alert("⚠️ Silakan pilih dompet digital penampung fee admin!");
-                }
-
-                // Update digital wallet balance
-                const saldoDompet = getWalletBalance(dompetFee);
-                setWalletBalance(dompetFee, saldoDompet + admin);
-
-                // Log into cashierHistory
-                cashierHistory.unshift({
-                    id: idTrx,
-                    tanggal: strTanggal,
-                    waktu: strWaktu,
-                    obat: `${namaLayanan} [Fee Admin via ${dompetFee}]`,
-                    kasir: 'Operator BRILink',
-                    item: 1,
-                    total: admin,
-                    metode: 'QRIS',
-                    metodeBayar: 'QRIS',
-                    laba: labaTrx,
-                    pelanggan: pelanggan,
-                    isBRILink: true,
-                    brilinkMode: 'TRANSFER',
-                    brilinkSumberDana: 'ATM Pelanggan',
-                    brilinkDompetFee: dompetFee,
-                    brilinkTipePotongAdmin: 'dalam',
-                    brilinkNominal: nominal,
-                    brilinkAdmin: admin,
-                    brilinkRekening: rekening
-                });
-            } else {
-                // "Bayar di Luar" (Paid Outside):
-                // Laci Fisik = + A
-                // Digital Wallet = 0 (No change)
-                // Laba = + A
-                const saldoLaci = getWalletBalance('Laci');
-                setWalletBalance('Laci', saldoLaci + admin);
-
-                cashierHistory.unshift({
-                    id: idTrx,
-                    tanggal: strTanggal,
-                    waktu: strWaktu,
-                    obat: `${namaLayanan} [Fee Admin Tunai Laci]`,
-                    kasir: 'Operator BRILink',
-                    item: 1,
-                    total: admin,
-                    metode: 'Tunai',
-                    metodeBayar: 'Tunai',
-                    laba: labaTrx,
-                    pelanggan: pelanggan,
-                    isBRILink: true,
-                    brilinkMode: 'TRANSFER',
-                    brilinkSumberDana: 'ATM Pelanggan',
-                    brilinkTipePotongAdmin: 'luar',
-                    brilinkNominal: nominal,
-                    brilinkAdmin: admin,
-                    brilinkRekening: rekening
-                });
-            }
+            cashierHistory.unshift({
+                id: idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                obat: `${namaLayanan} [Fee Admin Tunai Laci]`,
+                kasir: 'Operator BRILink',
+                item: 1,
+                total: admin,
+                metode: 'Tunai',
+                metodeBayar: 'Tunai',
+                laba: labaTrx,
+                pelanggan: pelanggan,
+                isBRILink: true,
+                brilinkMode: 'TRANSFER',
+                brilinkServiceType: serviceCategory,
+                brilinkSumberDana: 'ATM Pelanggan',
+                brilinkBankPelanggan: bankPelanggan,
+                brilinkNoRekPelanggan: noRekPelanggan,
+                brilinkTipePotongAdmin: 'luar',
+                brilinkNominal: nominal,
+                brilinkAdmin: admin,
+                brilinkRekening: rekening
+            });
         } else {
-            // SCENARIO A: Target is Normal Wallet (BRI, SeaBank, GoPay, or DANA)
-            if (tipePotongAdmin === 'dalam') {
-                // "Bayar di Dalam" (Paid Inside):
-                // Laci Fisik = + N
-                // Selected Digital Wallet = - (N - A)
-                // Laba = + A
-                const deduction = nominal - admin;
-                const saldoDigital = getWalletBalance(sumberDana);
+            // Anton Cell Wallet -> Customer Bank/E-Wallet
+            const saldoDigital = getWalletBalance(sumberDana);
 
-                // Anti-Minus check
-                if (deduction > saldoDigital) {
-                    return alert(`Saldo ${sumberDana} tidak mencukupi!`);
-                }
-
-                setWalletBalance('Laci', getWalletBalance('Laci') + nominal);
-                setWalletBalance(sumberDana, saldoDigital - deduction);
-
-                totalNominalHalaman = nominal;
-
-                cashierHistory.unshift({
-                    id: idTrx,
-                    tanggal: strTanggal,
-                    waktu: strWaktu,
-                    obat: namaLayanan,
-                    kasir: 'Operator BRILink',
-                    item: 1,
-                    total: totalNominalHalaman,
-                    metode: 'Tunai',
-                    metodeBayar: 'Tunai',
-                    laba: labaTrx,
-                    pelanggan: pelanggan,
-                    isBRILink: true,
-                    brilinkMode: 'TRANSFER',
-                    brilinkSumberDana: sumberDana,
-                    brilinkTipePotongAdmin: 'dalam',
-                    brilinkNominal: nominal,
-                    brilinkAdmin: admin,
-                    brilinkRekening: rekening
-                });
-
-                pengeluaranHistory.unshift({
-                    id: 'BRILINK-WALLET-' + idTrx,
-                    tanggal: strTanggal,
-                    waktu: strWaktu,
-                    kategori: 'Biaya Toko',
-                    sumberDana: 'QRIS',
-                    nominal: deduction,
-                    keterangan: `BRILink Transfer ${sumberDana} ke ${rekening} (${pelanggan}) - Potong Dalam`
-                });
-            } else {
-                // "Bayar di Luar" (Paid Outside):
-                // Laci Fisik = + (N + A)
-                // Selected Digital Wallet = - N
-                // Laba = + A
-                const saldoDigital = getWalletBalance(sumberDana);
-
-                // Anti-Minus check
-                if (nominal > saldoDigital) {
-                    return alert(`Saldo ${sumberDana} tidak mencukupi!`);
-                }
-
-                setWalletBalance('Laci', getWalletBalance('Laci') + (nominal + admin));
-                setWalletBalance(sumberDana, saldoDigital - nominal);
-
-                totalNominalHalaman = nominal + admin;
-
-                cashierHistory.unshift({
-                    id: idTrx,
-                    tanggal: strTanggal,
-                    waktu: strWaktu,
-                    obat: namaLayanan,
-                    kasir: 'Operator BRILink',
-                    item: 1,
-                    total: totalNominalHalaman,
-                    metode: 'Tunai',
-                    metodeBayar: 'Tunai',
-                    laba: labaTrx,
-                    pelanggan: pelanggan,
-                    isBRILink: true,
-                    brilinkMode: 'TRANSFER',
-                    brilinkSumberDana: sumberDana,
-                    brilinkTipePotongAdmin: 'luar',
-                    brilinkNominal: nominal,
-                    brilinkAdmin: admin,
-                    brilinkRekening: rekening
-                });
-
-                pengeluaranHistory.unshift({
-                    id: 'BRILINK-WALLET-' + idTrx,
-                    tanggal: strTanggal,
-                    waktu: strWaktu,
-                    kategori: 'Biaya Toko',
-                    sumberDana: 'QRIS',
-                    nominal: nominal,
-                    keterangan: `BRILink Transfer ${sumberDana} ke ${rekening} (${pelanggan})`
-                });
+            // Anti-Minus check
+            if (nominal > saldoDigital) {
+                return alert(`Saldo ${sumberDana} tidak mencukupi! Dibutuhkan Rp ${nominal.toLocaleString('id-ID')}, saldo saat ini Rp ${saldoDigital.toLocaleString('id-ID')}.`);
             }
+
+            setWalletBalance('Laci', getWalletBalance('Laci') + (nominal + admin));
+            setWalletBalance(sumberDana, saldoDigital - nominal);
+
+            totalNominalHalaman = nominal + admin;
+
+            cashierHistory.unshift({
+                id: idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                obat: namaLayanan,
+                kasir: 'Operator BRILink',
+                item: 1,
+                total: totalNominalHalaman,
+                metode: 'Tunai',
+                metodeBayar: 'Tunai',
+                laba: labaTrx,
+                pelanggan: pelanggan,
+                isBRILink: true,
+                brilinkMode: 'TRANSFER',
+                brilinkServiceType: serviceCategory,
+                brilinkSumberDana: sumberDana,
+                brilinkBankPelanggan: bankPelanggan,
+                brilinkNoRekPelanggan: noRekPelanggan,
+                brilinkTipePotongAdmin: 'luar',
+                brilinkNominal: nominal,
+                brilinkAdmin: admin,
+                brilinkRekening: rekening
+            });
+
+            pengeluaranHistory.unshift({
+                id: 'BRILINK-WALLET-' + idTrx,
+                tanggal: strTanggal,
+                waktu: strWaktu,
+                kategori: 'Biaya Toko',
+                sumberDana: 'QRIS',
+                nominal: nominal,
+                keterangan: `BRILink ${serviceCategory} ${sumberDana} ke ${rekening} (${pelanggan})`
+            });
         }
 
         // Accumulate isolated BRILink Profit
         addLabaBRILink(admin);
 
     } else {
-        // DOUBLE-ENTRY LOGIC FOR TARIK TUNAI
+        // Mode TARIK TUNAI:
+        // Dari Rek/Akun Pelanggan:
+        const dariBankElem = document.getElementById('inputBRILinkDariBankPelanggan');
+        const dariBank = dariBankElem ? dariBankElem.value : 'Bank BRI';
+        const dariNoRekElem = document.getElementById('inputBRILinkDariNoRekPelanggan');
+        const dariNoRek = dariNoRekElem ? dariNoRekElem.value.trim() : '';
+        const rekening = dariNoRek ? `${dariBank} (${dariNoRek})` : dariBank;
+
+        // Ke Rek/Akun Anton Cell:
+        const selectAkunToko = document.getElementById('selectBRILinkAkunToko');
+        const akunToko = selectAkunToko ? selectAkunToko.value : 'Bank BRI';
+
+        // Tipe Potongan Admin (Dalam / Luar)
+        const potongAdminElem = document.querySelector('input[name="brilinkPotongAdmin"]:checked');
+        const tipePotongAdmin = potongAdminElem ? potongAdminElem.value : 'dalam';
+
+        let namaLayanan = `BRILink Tarik Tunai: ${dariBank} -> ${akunToko}`;
+        if (catatan) namaLayanan += ` (${catatan})`;
+
         const saldoLaci = getWalletBalance('Laci');
         const saldoAkunToko = getWalletBalance(akunToko);
 
@@ -9884,18 +9854,21 @@ function prosesTransaksiBRILink() {
                 kasir: 'Operator BRILink',
                 item: 1,
                 total: totalNominalHalaman,
-                metode: 'QRIS', // Bank/EDC bertambah (Transferan dari pelanggan)
+                metode: 'QRIS',
                 metodeBayar: 'QRIS',
                 laba: labaTrx,
                 pelanggan: pelanggan,
                 isBRILink: true,
                 brilinkMode: 'TARIK',
-                brilinkSumberDana: sumberDana,
+                brilinkServiceType: 'Tarik Tunai',
+                brilinkSumberDana: dariBank,
+                brilinkBankPelanggan: dariBank,
+                brilinkNoRekPelanggan: dariNoRek,
                 brilinkAkunToko: akunToko,
                 brilinkTipePotongAdmin: 'luar',
                 brilinkNominal: nominal,
                 brilinkAdmin: admin,
-                brilinkRekening: akunToko
+                brilinkRekening: rekening
             });
 
             pengeluaranHistory.unshift({
@@ -9903,9 +9876,9 @@ function prosesTransaksiBRILink() {
                 tanggal: strTanggal,
                 waktu: strWaktu,
                 kategori: 'Biaya Toko',
-                sumberDana: 'Tunai', // Potong Uang Laci Fisik
+                sumberDana: 'Tunai',
                 nominal: uangKeluarLaci,
-                keterangan: `BRILink Tarik Tunai ke ${pelanggan} (${akunToko}) - Potong Di Luar`
+                keterangan: `BRILink Tarik Tunai ${dariBank} ke ${pelanggan} via ${akunToko} - Potong Di Luar`
             });
         } else {
             // Tipe "Bayar di Dalam":
@@ -9929,18 +9902,21 @@ function prosesTransaksiBRILink() {
                 kasir: 'Operator BRILink',
                 item: 1,
                 total: totalNominalHalaman,
-                metode: 'QRIS', // Bank/EDC bertambah (Transferan dari pelanggan)
+                metode: 'QRIS',
                 metodeBayar: 'QRIS',
                 laba: labaTrx,
                 pelanggan: pelanggan,
                 isBRILink: true,
                 brilinkMode: 'TARIK',
-                brilinkSumberDana: sumberDana,
+                brilinkServiceType: 'Tarik Tunai',
+                brilinkSumberDana: dariBank,
+                brilinkBankPelanggan: dariBank,
+                brilinkNoRekPelanggan: dariNoRek,
                 brilinkAkunToko: akunToko,
                 brilinkTipePotongAdmin: 'dalam',
                 brilinkNominal: nominal,
                 brilinkAdmin: admin,
-                brilinkRekening: akunToko
+                brilinkRekening: rekening
             });
 
             pengeluaranHistory.unshift({
@@ -9948,9 +9924,9 @@ function prosesTransaksiBRILink() {
                 tanggal: strTanggal,
                 waktu: strWaktu,
                 kategori: 'Biaya Toko',
-                sumberDana: 'Tunai', // Potong Uang Laci Fisik
+                sumberDana: 'Tunai',
                 nominal: nominal,
-                keterangan: `BRILink Tarik Tunai ke ${pelanggan} (${akunToko}) - Bayar Di Dalam`
+                keterangan: `BRILink Tarik Tunai ${dariBank} ke ${pelanggan} via ${akunToko} - Bayar Di Dalam`
             });
         }
 
@@ -10340,8 +10316,38 @@ function prosesTransaksiPPOB() {
 // (BRILink, Pulsa/PPOB, Retail Aksesoris)
 // ==========================================
 
-function bukaModalLabaBRILink() {
+let filterLabaBRILinkAktif = 'all';
+let filterLabaPPOBAktif = 'all';
+
+function setFilterLabaBRILink(kategori) {
+    filterLabaBRILinkAktif = kategori;
+    ['all', 'Transfer', 'Tarik Tunai', 'Top Up E-Wallet'].forEach(kat => {
+        const tab = document.getElementById(`tabLabaBRILink-${kat}`);
+        if (!tab) return;
+        if (kat === kategori) {
+            tab.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-sm shrink-0";
+        } else {
+            tab.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0";
+        }
+    });
     renderLabaBRILink();
+}
+
+function getBRILinkServiceType(t) {
+    if (t.brilinkServiceType) return t.brilinkServiceType;
+    const rawMode = (t.brilinkMode || '').toUpperCase();
+    const obatLower = (t.obat || '').toLowerCase();
+    if (rawMode === 'TARIK' || obatLower.includes('tarik tunai')) {
+        return 'Tarik Tunai';
+    } else if (obatLower.includes('top up') || obatLower.includes('topup') || obatLower.includes('e-wallet')) {
+        return 'Top Up E-Wallet';
+    }
+    return 'Transfer';
+}
+
+function bukaModalLabaBRILink() {
+    filterLabaBRILinkAktif = 'all';
+    setFilterLabaBRILink('all');
     bukaModalMobile('modalLabaBRILink', 'panelLabaBRILink');
 }
 
@@ -10352,13 +10358,16 @@ function renderLabaBRILink() {
     if (!wadah) return;
 
     // Filter: Show transactions where service is 'Transfer', 'Tarik Tunai', or 'Top Up E-Wallet'
-    // In Anton Cell cashierHistory: isBRILink === true, or service explicitly indicates BRILink / Transfer / Tarik Tunai / Top Up
-    const listTrx = cashierHistory.filter(t => {
+    let listTrx = cashierHistory.filter(t => {
         if (!t) return false;
         if (t.isBRILink) return true;
         const obatStr = (t.obat || '').toLowerCase();
         return obatStr.includes('brilink') || obatStr.includes('transfer') || obatStr.includes('tarik tunai') || obatStr.includes('top up') || obatStr.includes('topup');
     });
+
+    if (filterLabaBRILinkAktif !== 'all') {
+        listTrx = listTrx.filter(t => getBRILinkServiceType(t) === filterLabaBRILinkAktif);
+    }
 
     let totalLaba = 0;
     let countActive = 0;
@@ -10377,7 +10386,7 @@ function renderLabaBRILink() {
         wadah.innerHTML = `
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
                 <i class="fa-solid fa-building-columns text-4xl text-slate-300 mb-3 block"></i>
-                <p class="font-bold text-slate-600 text-sm">Belum ada riwayat transaksi BRILink.</p>
+                <p class="font-bold text-slate-600 text-sm">Belum ada riwayat transaksi BRILink${filterLabaBRILinkAktif !== 'all' ? ` (${filterLabaBRILinkAktif})` : ''}.</p>
                 <p class="text-[11px] text-slate-400 mt-1">Transaksi Transfer, Tarik Tunai, dan Top Up E-Wallet akan tampil di sini.</p>
             </div>`;
         return;
@@ -10389,29 +10398,24 @@ function renderLabaBRILink() {
         const strikeClass = isCancelled ? 'line-through text-slate-400' : '';
 
         // Transaction Type
-        let jenisLayanan = 'Transfer';
+        const jenisLayanan = getBRILinkServiceType(t);
         let tipeBadgeColor = 'bg-blue-100 text-blue-700';
         let tipeIcon = '<i class="fa-solid fa-paper-plane mr-1"></i>';
 
-        const rawMode = (t.brilinkMode || '').toUpperCase();
-        const obatLower = (t.obat || '').toLowerCase();
-
-        if (rawMode === 'TARIK' || obatLower.includes('tarik tunai')) {
-            jenisLayanan = 'Tarik Tunai';
+        if (jenisLayanan === 'Tarik Tunai') {
             tipeBadgeColor = 'bg-amber-100 text-amber-700';
             tipeIcon = '<i class="fa-solid fa-hand-holding-dollar mr-1"></i>';
-        } else if (obatLower.includes('top up') || obatLower.includes('topup') || obatLower.includes('e-wallet')) {
-            jenisLayanan = 'Top Up E-Wallet';
+        } else if (jenisLayanan === 'Top Up E-Wallet') {
             tipeBadgeColor = 'bg-purple-100 text-purple-700';
             tipeIcon = '<i class="fa-solid fa-wallet mr-1"></i>';
         }
 
-        // Customer Name & Bank / Account Number
-        const namaPelanggan = t.pelanggan || 'Umum';
-        const rekening = t.brilinkRekening || t.rekening || '-';
+        // Customer Account Name
+        const namaAkunPelanggan = t.pelanggan || 'Umum';
 
-        // Sumber Dana
-        const sumberDana = t.brilinkSumberDana || (rawMode === 'TARIK' ? (t.brilinkAkunToko || 'EDC / Toko') : (t.metode || '-'));
+        // Bank / E-Wallet & Number
+        const bankPelanggan = t.brilinkBankPelanggan || (t.brilinkRekening ? t.brilinkRekening.split('(')[0].trim() : '-');
+        const noRekPelanggan = t.brilinkNoRekPelanggan || (t.brilinkRekening && t.brilinkRekening.includes('(') ? (t.brilinkRekening.split('(')[1] || '').replace(')', '').trim() : '-');
 
         // Nominal & Admin Fee Details (Amount & In/Out type)
         const nominal = t.brilinkNominal !== undefined ? t.brilinkNominal : (t.total || 0);
@@ -10424,6 +10428,60 @@ function renderLabaBRILink() {
         const labaBersih = t.laba !== undefined ? t.laba : adminFee;
 
         const redBatalBadge = isCancelled ? `<span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm mr-1"><i class="fa-solid fa-ban mr-1"></i>BATAL</span>` : '';
+
+        // Dynamic 5 Rows based on Service Type:
+        // TARIK TUNAI vs (TRANSFER or TOP UP E-WALLET)
+        let rowsHtml = '';
+        if (jenisLayanan === 'Tarik Tunai') {
+            const akunToko = t.brilinkAkunToko || (t.metode || 'Bank BRI');
+            rowsHtml = `
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Dari akun Pelanggan:</span>
+                    <span class="font-bold text-slate-800 truncate max-w-[200px]">${namaAkunPelanggan}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Akun pelanggan:</span>
+                    <span class="font-bold text-slate-800">${bankPelanggan}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Nomor akun pelanggan:</span>
+                    <span class="font-bold font-mono text-slate-700">${noRekPelanggan || '-'}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Ke Akun Anton Cell:</span>
+                    <span class="font-semibold text-blue-600">${akunToko}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Nominal Transaksi:</span>
+                    <span class="font-bold text-slate-800 ${strikeClass}">${rupiah(nominal)}</span>
+                </div>
+            `;
+        } else {
+            // TRANSFER or TOP UP E-WALLET
+            const sumberDanaAnton = t.brilinkSumberDana || 'Bank BRI';
+            rowsHtml = `
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Ke akun Pelanggan:</span>
+                    <span class="font-bold text-slate-800 truncate max-w-[200px]">${namaAkunPelanggan}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Akun pelanggan:</span>
+                    <span class="font-bold text-slate-800">${bankPelanggan}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Nomor akun pelanggan:</span>
+                    <span class="font-bold font-mono text-slate-700">${noRekPelanggan || '-'}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Dari Akun Anton Cell:</span>
+                    <span class="font-semibold text-blue-600">${sumberDanaAnton}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Nominal Transaksi:</span>
+                    <span class="font-bold text-slate-800 ${strikeClass}">${rupiah(nominal)}</span>
+                </div>
+            `;
+        }
 
         return `
         <div class="border rounded-2xl p-3.5 transition-all ${cardBg}">
@@ -10441,41 +10499,46 @@ function renderLabaBRILink() {
                 </div>
                 <div class="text-right">
                     <p class="text-[9.5px] font-bold text-slate-400 uppercase tracking-tight">Laba Bersih</p>
-                    <p class="text-sm font-black text-emerald-600 ${strikeClass}">+${rupiah(labaBersih)}</p>
+                    <div class="flex items-center justify-end gap-1.5 mt-0.5">
+                        <span class="text-sm font-black text-emerald-600 ${strikeClass}">+${rupiah(labaBersih)}</span>
+                        <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded ${tipeAdminBadge}">${tipeAdminLabel}</span>
+                    </div>
                 </div>
             </div>
 
             <div class="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Pelanggan:</span>
-                    <span class="font-bold text-slate-800 truncate max-w-[200px]">${namaPelanggan}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">No. Rek / Akun:</span>
-                    <span class="font-bold font-mono text-slate-700">${rekening}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Sumber Dana:</span>
-                    <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 text-[11px]">${sumberDana}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Nominal Transaksi:</span>
-                    <span class="font-bold text-slate-800 ${strikeClass}">${rupiah(nominal)}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">Biaya Admin:</span>
-                    <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-slate-800">${rupiah(adminFee)}</span>
-                        <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded ${tipeAdminBadge}">${tipeAdminLabel}</span>
-                    </div>
-                </div>
+                ${rowsHtml}
             </div>
         </div>`;
     }).join('');
 }
 
-function bukaModalLabaPPOB() {
+function setFilterLabaPPOB(kategori) {
+    filterLabaPPOBAktif = kategori;
+    ['all', 'Pulsa', 'Paket Data', 'PLN', 'Lainnya'].forEach(kat => {
+        const tab = document.getElementById(`tabLabaPPOB-${kat}`);
+        if (!tab) return;
+        if (kat === kategori) {
+            tab.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-cyan-700 text-white shadow-sm shrink-0";
+        } else {
+            tab.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0";
+        }
+    });
     renderLabaPPOB();
+}
+
+function getPPOBCategoryType(t) {
+    if (t.ppobKategori) return t.ppobKategori;
+    const obatStr = (t.obat || '').toLowerCase();
+    if (obatStr.includes('[pulsa]') || obatStr.includes('pulsa')) return 'Pulsa';
+    if (obatStr.includes('[paket data]') || obatStr.includes('paket data') || obatStr.includes('data')) return 'Paket Data';
+    if (obatStr.includes('[pln]') || obatStr.includes('pln') || obatStr.includes('token')) return 'PLN';
+    return 'Lainnya';
+}
+
+function bukaModalLabaPPOB() {
+    filterLabaPPOBAktif = 'all';
+    setFilterLabaPPOB('all');
     bukaModalMobile('modalLabaPPOB', 'panelLabaPPOB');
 }
 
@@ -10486,13 +10549,17 @@ function renderLabaPPOB() {
     if (!wadah) return;
 
     // Filter: Show transactions for Pulsa, Data, PLN, PDAM, BPJS, etc.
-    const listTrx = cashierHistory.filter(t => {
+    let listTrx = cashierHistory.filter(t => {
         if (!t) return false;
         if (t.isPPOB) return true;
         const obatStr = (t.obat || '').toLowerCase();
         return obatStr.includes('[pulsa]') || obatStr.includes('[paket data]') || obatStr.includes('[pln]') ||
                obatStr.includes('[pdam]') || obatStr.includes('[bpjs]') || obatStr.includes('[pegadaian]');
     });
+
+    if (filterLabaPPOBAktif !== 'all') {
+        listTrx = listTrx.filter(t => getPPOBCategoryType(t) === filterLabaPPOBAktif);
+    }
 
     let totalLaba = 0;
     let countActive = 0;
