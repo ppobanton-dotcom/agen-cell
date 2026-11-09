@@ -1569,6 +1569,41 @@ tailwind.config = {
             <!-- Area Akordeon Master -->
             <div class="p-6 overflow-y-auto hide-scrollbar flex-1 space-y-3">
 
+                <!-- BLOK: GOOGLE GEMINI AI SETTINGS -->
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden select-none">
+                    <div class="flex justify-between items-center p-4 cursor-pointer bg-slate-50" onclick="toggleAkordeonSetelan('setelan-gemini-hub')">
+                        <h4 class="text-[11px] font-black text-corporate-700 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-robot text-purple-600"></i> Integrasi Google Gemini AI
+                        </h4>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform duration-300" id="icon-setelan-gemini-hub"></i>
+                    </div>
+
+                    <div id="setelan-gemini-hub" class="hidden px-4 pb-4 pt-4 border-t border-slate-100 space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider pl-1">
+                                Gemini API Key (Google AI Studio) <span class="text-purple-600 font-black">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="password" id="inputGeminiApiKey" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-11 py-3 text-sm font-mono text-slate-800 focus:outline-none focus:border-purple-500 shadow-inner">
+                                <button type="button" onclick="toggleTampilGeminiKey()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm p-1">
+                                    <i class="fa-solid fa-eye" id="iconToggleGeminiKey"></i>
+                                </button>
+                            </div>
+                            <p class="text-[9.5px] text-slate-500 font-medium mt-1.5 pl-1">
+                                Digunakan untuk fitur <b>Auto-Isi via AI</b> (Gemini 1.5 Flash) saat upload struk screenshot DigiPOS, m-Banking, atau token PLN.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 pt-1">
+                            <button type="button" onclick="simpanGeminiApiKey()" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black py-2.5 px-4 rounded-xl shadow-sm transition-transform active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan API Key
+                            </button>
+                            <button type="button" onclick="hapusGeminiApiKey()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold py-2.5 px-3 rounded-xl transition-colors active:scale-95 text-xs">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- BLOK: MANAJEMEN DOMPET & SALDO -->
                 <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden select-none">
                     <div class="flex justify-between items-center p-4 cursor-pointer bg-slate-50" onclick="toggleAkordeonSetelan('setelan-dompet-saldo-hub')">
@@ -2006,7 +2041,33 @@ tailwind.config = {
                 <button onclick="tutupModalMobile('modalBRILink')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar relative">
+                <!-- AI Smart Upload Banner -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center text-sm shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-purple-900 leading-tight">Auto-Isi Transaksi</p>
+                            <p class="text-[9.5px] text-purple-600 font-semibold">Upload struk/bukti transfer</p>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="file" id="aiUploadInputBRILink" accept="image/*" class="hidden" onchange="handleAiImageUpload(event, 'BRILINK')">
+                        <button type="button" onclick="document.getElementById('aiUploadInputBRILink').click()" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow active:scale-95 transition-all">
+                            <span>🤖 Auto-Isi via AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Overlay for BRILink AI Fetch -->
+                <div id="aiLoadingBRILink" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                    <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-3"></div>
+                    <p class="font-black text-sm text-slate-800">Menganalisis Struk via Gemini 1.5 Flash...</p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-1">Mengekstrak data rekening, nominal & tujuan secara otomatis</p>
+                </div>
+
                 <div>
                     <label class="block text-[10px] font-black text-slate-600 mb-2 uppercase tracking-wider">Jenis Layanan Keuangan</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -2289,7 +2350,33 @@ tailwind.config = {
                 <button onclick="tutupModalMobile('modalPPOB')" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar">
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar relative">
+                <!-- AI Smart Upload Banner -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center text-sm shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-purple-900 leading-tight">Auto-Isi Transaksi</p>
+                            <p class="text-[9.5px] text-purple-600 font-semibold">Upload struk DigiPOS/PLN/Tagihan</p>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="file" id="aiUploadInputPPOB" accept="image/*" class="hidden" onchange="handleAiImageUpload(event, 'PPOB')">
+                        <button type="button" onclick="document.getElementById('aiUploadInputPPOB').click()" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow active:scale-95 transition-all">
+                            <span>🤖 Auto-Isi via AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Overlay for PPOB AI Fetch -->
+                <div id="aiLoadingPPOB" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                    <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-3"></div>
+                    <p class="font-black text-sm text-slate-800">Menganalisis Struk via Gemini 1.5 Flash...</p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-1">Mengekstrak nomor tujuan, nominal, nama produk & token PLN</p>
+                </div>
+
                 <!-- 1. Modern Category Grid (Replace Dropdown) -->
                 <div>
                     <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider">Kategori Produk Digital</label>
@@ -2345,6 +2432,15 @@ tailwind.config = {
                         <button type="button" onclick="pilihNominalCepatPPOB('50rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">50rb</button>
                         <button type="button" onclick="pilihNominalCepatPPOB('100rb')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-xs shrink-0 active:scale-95 transition-all shadow-sm">100rb</button>
                     </div>
+                </div>
+
+                <!-- Input Khusus PLN Token (Optional) -->
+                <div id="wadahPPOBToken">
+                    <label class="block text-[10px] font-black text-slate-600 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-key text-amber-500"></i> SN / Token PLN (20 Digit)</span>
+                        <span class="text-[9px] text-slate-400 font-bold lowercase">opsional</span>
+                    </label>
+                    <input type="text" id="inputPPOBToken" placeholder="Cth: 1234-5678-9012-3456-7890" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono font-bold text-slate-800 focus:outline-none focus:border-amber-500 shadow-inner">
                 </div>
 
                 <!-- Vendor / Capital Source Selection ("Sumber Modal / Aplikasi") -->
