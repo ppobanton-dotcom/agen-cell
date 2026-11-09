@@ -4989,10 +4989,61 @@ function reRenderAppWideWallets() {
     renderDropdownDompetPPOB();
 }
 
+const KEY_GEMINI_API = 'GEMINI_API_KEY';
+
+function getGeminiApiKey() {
+    return localStorage.getItem(KEY_GEMINI_API) || localStorage.getItem('antoncell_gemini_api_key') || '';
+}
+
+function simpanGeminiApiKey() {
+    const input = document.getElementById('inputGeminiApiKey');
+    if (!input) return;
+    const key = input.value.trim();
+    if (!key) {
+        return alert("⚠️ Silakan masukkan Gemini API Key yang valid!");
+    }
+    localStorage.setItem(KEY_GEMINI_API, key);
+    localStorage.setItem('antoncell_gemini_api_key', key);
+    alert("✅ Gemini API Key berhasil disimpan!");
+}
+
+function hapusGeminiApiKey() {
+    if (confirm("Hapus Gemini API Key yang tersimpan?")) {
+        localStorage.removeItem(KEY_GEMINI_API);
+        localStorage.removeItem('antoncell_gemini_api_key');
+        const input = document.getElementById('inputGeminiApiKey');
+        if (input) input.value = '';
+        alert("Gemini API Key telah dihapus.");
+    }
+}
+
+function toggleTampilGeminiKey() {
+    const input = document.getElementById('inputGeminiApiKey');
+    const icon = document.getElementById('iconToggleGeminiKey');
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+}
+
 function bukaModalSetelanMobile() {
     document.getElementById('setNamaMobile').value = profilApotek.nama;
     document.getElementById('setAlamatMobile').value = profilApotek.alamat || '';
     document.getElementById('setTelpMobile').value = profilApotek.telepon || '';
+
+    // Load Gemini API Key
+    const inputKey = document.getElementById('inputGeminiApiKey');
+    if (inputKey) inputKey.value = getGeminiApiKey();
 
     // Pastikan semua panel akordeon dalam keadaan tertutup rapat saat pertama kali dibuka
     let panelProfil = document.getElementById('setelan-profil');
@@ -10530,6 +10581,8 @@ function togglePPOBMetodeBayar() {
 function bukaModalPPOB() {
     document.getElementById('inputPPOBTarget').value = '';
     document.getElementById('inputPPOBNamaProduk').value = '';
+    const inputToken = document.getElementById('inputPPOBToken');
+    if (inputToken) inputToken.value = '';
     document.getElementById('inputPPOBModal').value = '';
     document.getElementById('inputPPOBJual').value = '';
     const inputKasbonNama = document.getElementById('inputPPOBKasbonNama');
@@ -10560,6 +10613,7 @@ function prosesTransaksiPPOB() {
     const kategori = inputKat ? inputKat.value : 'Pulsa';
     const target = document.getElementById('inputPPOBTarget').value.trim();
     const namaProduk = document.getElementById('inputPPOBNamaProduk').value.trim();
+    const tokenPln = document.getElementById('inputPPOBToken') ? document.getElementById('inputPPOBToken').value.trim() : '';
     const rawModal = document.getElementById('inputPPOBModal').value.replace(/\./g, '');
     const rawJual = document.getElementById('inputPPOBJual').value.replace(/\./g, '');
     const radioMetode = document.querySelector('input[name="ppobMetode"]:checked');
@@ -10649,6 +10703,9 @@ function prosesTransaksiPPOB() {
         ppobVendor: vendorWallet,
         ppobModal: modal,
         ppobDompetPenerima: dompetPenerima,
+        ppobSn: tokenPln,
+        sn: tokenPln,
+        token: tokenPln,
         statusLunas: metode !== 'Debt',
         detailKeranjang: [{
             dnaInduk: 'PPOB-' + kategori.replace(/\s/g, ''),
@@ -10697,6 +10754,11 @@ function prosesTransaksiPPOB() {
             <span>Vendor:</span>
             <span class="font-bold text-purple-700">${vendorWallet}</span>
         </div>
+        ${tokenPln ? `
+        <div class="flex justify-between items-center text-slate-500">
+            <span>SN / Token PLN:</span>
+            <span class="font-mono font-bold text-amber-600">${tokenPln}</span>
+        </div>` : ''}
         <div class="flex justify-between items-center pt-2 border-t border-slate-200">
             <span class="font-bold text-slate-700">Harga Jual:</span>
             <span class="font-black text-emerald-600 text-sm">${rupiah(jual)}</span>
@@ -10936,6 +10998,256 @@ function renderLabaBRILink() {
             </div>
         </div>`;
     }).join('');
+}
+
+// ==========================================
+// 17. GOOGLE GEMINI 1.5 FLASH AI INTEGRATION
+// ==========================================
+async function fileToBase64Data(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result;
+            // result format: "data:image/jpeg;base64,xxxx..."
+            const match = result.match(/^data:(.+?);base64,(.+)$/);
+            if (match) {
+                resolve({
+                    mimeType: match[1],
+                    data: match[2]
+                });
+            } else {
+                reject(new Error("Gagal membaca file gambar sebagai Base64."));
+            }
+        };
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+
+async function callGeminiVisionApi(base64Obj, apiKey) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const promptText = 'Analyze this transaction receipt screenshot. Extract the transaction details and return ONLY a valid JSON object with the following keys: "nomor_tujuan" (phone or account number), "nama_produk" (name of the package or service), "harga_modal" (numeric value of the cost price/total paid), and "token_pln" (the 20-digit electricity token, or empty string if not found). Do not include markdown formatting like ```json.';
+
+    const requestBody = {
+        contents: [
+            {
+                parts: [
+                    {
+                        text: promptText
+                    },
+                    {
+                        inlineData: {
+                            mimeType: base64Obj.mimeType || 'image/jpeg',
+                            data: base64Obj.data
+                        }
+                    }
+                ]
+            }
+        ],
+        generationConfig: {
+            temperature: 0.1,
+            topK: 1
+        }
+    };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+        let errMessage = `HTTP error! status: ${response.status}`;
+        try {
+            const errJson = await response.json();
+            if (errJson && errJson.error && errJson.error.message) {
+                errMessage = errJson.error.message;
+            }
+        } catch (_) {}
+        throw new Error(errMessage);
+    }
+
+    const data = await response.json();
+    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return candidateText;
+}
+
+function parseGeminiJson(rawText) {
+    if (!rawText) throw new Error("AI tidak memberikan respon teks.");
+    // Strip markdown code block if present
+    let cleaned = rawText.trim();
+    if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    }
+    // Find json boundaries { ... }
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
+    return JSON.parse(cleaned);
+}
+
+async function handleAiImageUpload(event, formType) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so user can re-upload same file if desired
+    event.target.value = '';
+
+    const apiKey = getGeminiApiKey();
+    if (!apiKey) {
+        alert("⚠️ Gemini API Key belum disetel!\nSilakan buka Pengaturan > Integrasi Google Gemini AI untuk memasukkan API Key Anda.");
+        bukaModalSetelanMobile();
+        const accordion = document.getElementById('setelan-gemini-hub');
+        const icon = document.getElementById('icon-setelan-gemini-hub');
+        if (accordion && accordion.classList.contains('hidden')) {
+            accordion.classList.remove('hidden');
+            if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+        return;
+    }
+
+    const loadingEl = formType === 'BRILINK' ? document.getElementById('aiLoadingBRILink') : document.getElementById('aiLoadingPPOB');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+
+    try {
+        const base64Obj = await fileToBase64Data(file);
+        const rawAiResponse = await callGeminiVisionApi(base64Obj, apiKey);
+        const parsedData = parseGeminiJson(rawAiResponse);
+
+        if (formType === 'PPOB') {
+            autoPopulatePPOBForm(parsedData);
+        } else if (formType === 'BRILINK') {
+            autoPopulateBRILinkForm(parsedData);
+        }
+
+        triggerHaptic([100, 50, 100]);
+        alert("✨ Formulir berhasil diisi otomatis oleh AI Gemini!");
+    } catch (err) {
+        console.error("Gemini AI Auto-Isi Error:", err);
+        alert("❌ Gagal menganalisis struk: " + (err.message || err));
+    } finally {
+        if (loadingEl) loadingEl.classList.add('hidden');
+    }
+}
+
+function autoPopulatePPOBForm(data) {
+    if (!data) return;
+
+    const noTujuan = (data.nomor_tujuan || '').toString().trim();
+    const namaProduk = (data.nama_produk || '').toString().trim();
+    let hargaModal = 0;
+    if (typeof data.harga_modal === 'number') {
+        hargaModal = data.harga_modal;
+    } else if (data.harga_modal) {
+        hargaModal = parseFloat(data.harga_modal.toString().replace(/[^0-9.]/g, '')) || 0;
+    }
+    const tokenPln = (data.token_pln || '').toString().trim();
+
+    // 1. Set Nomor Tujuan / ID
+    if (noTujuan) {
+        const targetInput = document.getElementById('inputPPOBTarget');
+        if (targetInput) targetInput.value = noTujuan;
+    }
+
+    // 2. Set Nama Produk
+    if (namaProduk) {
+        const prodInput = document.getElementById('inputPPOBNamaProduk');
+        if (prodInput) prodInput.value = namaProduk;
+    }
+
+    // 3. Set Token PLN
+    const tokenInput = document.getElementById('inputPPOBToken');
+    if (tokenInput && tokenPln) {
+        tokenInput.value = tokenPln;
+    }
+
+    // 4. Auto-detect & switch Category if PLN or other clues
+    const combinedStr = `${namaProduk} ${tokenPln}`.toLowerCase();
+    if (tokenPln || combinedStr.includes('pln') || combinedStr.includes('token') || combinedStr.includes('listrik')) {
+        const plnChip = document.querySelector('.ppob-cat-chip[data-cat="PLN"]');
+        if (plnChip) pilihKategoriPPOB('PLN', plnChip);
+    } else if (combinedStr.includes('paket') || combinedStr.includes('data') || combinedStr.includes('gb') || combinedStr.includes('kuota')) {
+        const dataChip = document.querySelector('.ppob-cat-chip[data-cat="Paket Data"]');
+        if (dataChip) pilihKategoriPPOB('Paket Data', dataChip);
+    } else if (combinedStr.includes('bpjs')) {
+        const bpjsChip = document.querySelector('.ppob-cat-chip[data-cat="BPJS"]');
+        if (bpjsChip) pilihKategoriPPOB('BPJS', bpjsChip);
+    } else if (combinedStr.includes('pdam') || combinedStr.includes('air')) {
+        const pdamChip = document.querySelector('.ppob-cat-chip[data-cat="PDAM"]');
+        if (pdamChip) pilihKategoriPPOB('PDAM', pdamChip);
+    } else if (combinedStr.includes('pegadaian')) {
+        const pegChip = document.querySelector('.ppob-cat-chip[data-cat="Pegadaian"]');
+        if (pegChip) pilihKategoriPPOB('Pegadaian', pegChip);
+    }
+
+    // 5. Set Modal HPP
+    const modalInput = document.getElementById('inputPPOBModal');
+    if (modalInput && hargaModal > 0) {
+        modalInput.value = Math.round(hargaModal).toLocaleString('id-ID');
+    }
+
+    // 6. Suggest Harga Jual if empty or lower than modal (e.g. +2000 margin default)
+    const jualInput = document.getElementById('inputPPOBJual');
+    if (jualInput && hargaModal > 0) {
+        const currentJual = parseFloat(jualInput.value.replace(/\./g, '')) || 0;
+        if (currentJual <= 0 || currentJual < hargaModal) {
+            let suggestedMargin = 2000;
+            if (hargaModal >= 100000) suggestedMargin = 3000;
+            const suggestedJual = Math.ceil((hargaModal + suggestedMargin) / 500) * 500;
+            jualInput.value = suggestedJual.toLocaleString('id-ID');
+        }
+    }
+
+    // Update live profit calculation
+    updateLiveLabaPPOB();
+}
+
+function autoPopulateBRILinkForm(data) {
+    if (!data) return;
+
+    const noTujuan = (data.nomor_tujuan || '').toString().trim();
+    const namaProduk = (data.nama_produk || '').toString().trim();
+    let hargaModal = 0;
+    if (typeof data.harga_modal === 'number') {
+        hargaModal = data.harga_modal;
+    } else if (data.harga_modal) {
+        hargaModal = parseFloat(data.harga_modal.toString().replace(/[^0-9.]/g, '')) || 0;
+    }
+
+    // 1. Populate Target Account/Number
+    if (noTujuan) {
+        const rekTransfer = document.getElementById('inputBRILinkRekening');
+        if (rekTransfer) rekTransfer.value = noTujuan;
+        const rekTarik = document.getElementById('inputBRILinkDariNoRekPelanggan');
+        if (rekTarik) rekTarik.value = noTujuan;
+    }
+
+    // 2. Populate Catatan / Nama Pelanggan
+    if (namaProduk) {
+        const catInput = document.getElementById('inputBRILinkCatatan');
+        if (catInput) catInput.value = namaProduk;
+
+        const pelInput = document.getElementById('inputBRILinkPelanggan');
+        if (pelInput && (!pelInput.value || pelInput.value === 'UMUM')) {
+            // Check if namaProduk looks like a person's name or transfer note
+            if (!namaProduk.toLowerCase().includes('transfer') && !namaProduk.toLowerCase().includes('tarik') && !namaProduk.toLowerCase().includes('top up')) {
+                pelInput.value = namaProduk;
+            }
+        }
+    }
+
+    // 3. Populate Nominal Transaksi and recalculate Admin Fee
+    if (hargaModal > 0) {
+        const nominalInput = document.getElementById('inputBRILinkNominal');
+        if (nominalInput) {
+            nominalInput.value = Math.round(hargaModal).toLocaleString('id-ID');
+            onInputBRILinkNominal();
+        }
+    }
 }
 
 function setFilterLabaPPOB(kategori) {
