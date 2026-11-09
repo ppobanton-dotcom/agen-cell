@@ -11003,25 +11003,77 @@ function renderLabaBRILink() {
 // ==========================================
 // 17. GOOGLE GEMINI 1.5 FLASH AI INTEGRATION
 // ==========================================
-async function fileToBase64Data(file) {
+async function compressImageToJpeg(file, maxDimension = 800, quality = 0.6) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-            const result = reader.result;
-            // result format: "data:image/jpeg;base64,xxxx..."
-            const match = result.match(/^data:(.+?);base64,(.+)$/);
-            if (match) {
-                resolve({
-                    mimeType: match[1],
-                    data: match[2]
-                });
-            } else {
-                reject(new Error("Gagal membaca file gambar sebagai Base64."));
-            }
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDimension || height > maxDimension) {
+                    if (width >= height) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    } else {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                const match = dataUrl.match(/^data:(.+?);base64,(.+)$/);
+                if (match) {
+                    resolve({
+                        mimeType: match[1],
+                        data: match[2]
+                    });
+                } else {
+                    reject(new Error("Gagal mengompres gambar."));
+                }
+            };
+            img.onerror = () => reject(new Error("Gagal memuat gambar untuk kompresi."));
+            img.src = e.target.result;
         };
-        reader.onerror = error => reject(error);
+        reader.onerror = (err) => reject(err);
         reader.readAsDataURL(file);
     });
+}
+
+async function fileToBase64Data(file) {
+    // Client-Side Image Compression using HTML5 <canvas>
+    // Downscale max width/height to 800px, JPEG format with 0.6 quality
+    try {
+        return await compressImageToJpeg(file, 800, 0.6);
+    } catch (compressErr) {
+        console.warn("Gagal kompresi canvas, fallback ke raw base64:", compressErr);
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result;
+                const match = result.match(/^data:(.+?);base64,(.+)$/);
+                if (match) {
+                    resolve({
+                        mimeType: match[1],
+                        data: match[2]
+                    });
+                } else {
+                    reject(new Error("Gagal membaca file gambar sebagai Base64."));
+                }
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
 }
 
 async function callGeminiVisionApi(base64Obj, apiKey) {
@@ -11050,28 +11102,47 @@ async function callGeminiVisionApi(base64Obj, apiKey) {
         }
     };
 
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-    });
+    const maxRetries = 3;
+    const retryDelayMs = 1000;
+    let lastError = null;
 
-    if (!response.ok) {
-        let errMessage = `HTTP error! status: ${response.status}`;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-            const errJson = await response.json();
-            if (errJson && errJson.error && errJson.error.message) {
-                errMessage = errJson.error.message;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                let errMessage = `HTTP error! status: ${response.status}`;
+                try {
+                    const errJson = await response.json();
+                    if (errJson && errJson.error && errJson.error.message) {
+                        errMessage = errJson.error.message;
+                    }
+                } catch (_) {}
+
+                const error = new Error(errMessage);
+                error.status = response.status;
+                throw error;
             }
-        } catch (_) {}
-        throw new Error(errMessage);
+
+            const data = await response.json();
+            const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            return candidateText;
+        } catch (err) {
+            lastError = err;
+            if (attempt < maxRetries) {
+                console.warn(`[Gemini AI] Percobaan ${attempt + 1} gagal (${err.message}). Mencoba lagi secara otomatis dalam 1000ms...`);
+                await new Promise(res => setTimeout(res, retryDelayMs));
+            }
+        }
     }
 
-    const data = await response.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return candidateText;
+    throw lastError || new Error("Gagal menghubungi layanan Gemini API setelah beberapa percobaan.");
 }
 
 function parseGeminiJson(rawText) {
