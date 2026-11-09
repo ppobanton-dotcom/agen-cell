@@ -11025,7 +11025,7 @@ async function fileToBase64Data(file) {
 }
 
 async function callGeminiVisionApi(base64Obj, apiKey) {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
     const promptText = 'Analyze this transaction receipt screenshot. Extract the transaction details and return ONLY a valid JSON object with the following keys: "nomor_tujuan" (phone or account number), "nama_produk" (name of the package or service), "harga_modal" (numeric value of the cost price/total paid), and "token_pln" (the 20-digit electricity token, or empty string if not found). Do not include markdown formatting like ```json.';
 
     const requestBody = {
